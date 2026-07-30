@@ -114,11 +114,32 @@ class AnomalyPreComputePipeline:
                     it["price_z_score"] = None
                     it["is_price_outlier"] = False
 
+        # Detect progress-gap anomalies for eCMS items.
+        # Flag contracts where physical and financial progress diverge
+        # by >50 percentage points — classic sign of:
+        #   - ghost/inflated physical reporting
+        #   - vendor paid without delivering
+        #   - abandoned contracts
+        progress_gap_count = 0
+        for it in self.items_buffer:
+            phys = it.get("physical_progress_pct")
+            fin = it.get("financial_progress_pct")
+            if phys is None or fin is None:
+                it["progress_gap"] = None
+                it["is_progress_anomaly"] = False
+                continue
+            gap = abs(phys - fin)
+            it["progress_gap"] = round(gap, 2)
+            it["is_progress_anomaly"] = gap > 50
+            if it["is_progress_anomaly"]:
+                progress_gap_count += 1
+
         # Count outliers for logging.
         outliers = [it for it in self.items_buffer if it.get("is_price_outlier")]
         spider.logger.info(
             f"[anomaly] Grouped {len(self.items_buffer)} contracts into "
-            f"{len(groups)} buckets; flagged {len(outliers)} as price outliers"
+            f"{len(groups)} buckets; flagged {len(outliers)} as price outliers, "
+            f"{progress_gap_count} as progress-gap anomalies"
         )
 
         # Persist computed anomaly fields to a sidecar file so
@@ -127,17 +148,22 @@ class AnomalyPreComputePipeline:
         import os
         try:
             os.makedirs("data", exist_ok=True)
-            with open("data/anomaly_overrides.ndjson", "w", encoding="utf-8") as f:
+            # Pick sidecar filename based on spider name so two concurrent
+            # runs (egp_contracts + egp_ecms) don't trample each other.
+            sidecar = f"data/{spider.name}_anomaly_overrides.ndjson"
+            with open(sidecar, "w", encoding="utf-8") as f:
                 for it in self.items_buffer:
                     f.write(json.dumps({
                         "tender_id": it.get("tender_id"),
                         "median_bdt": it.get("median_bdt"),
                         "price_z_score": it.get("price_z_score"),
                         "is_price_outlier": it.get("is_price_outlier"),
+                        "progress_gap": it.get("progress_gap"),
+                        "is_progress_anomaly": it.get("is_progress_anomaly"),
                     }, ensure_ascii=False) + "\n")
             spider.logger.info(
                 f"[anomaly] Wrote {len(self.items_buffer)} anomaly overrides "
-                f"to data/anomaly_overrides.ndjson"
+                f"to {sidecar}"
             )
         except Exception as e:
             spider.logger.warning(f"[anomaly] Could not write overrides: {e}")

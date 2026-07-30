@@ -30,8 +30,9 @@ class JsonExportPipeline:
     def open_spider(self, spider):
         os.makedirs(self.output_dir, exist_ok=True)
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        spider_name = getattr(spider, "name", "egp_scraper")
         self.filepath = os.path.join(
-            self.output_dir, f"egp_contracts_{timestamp}.ndjson"
+            self.output_dir, f"{spider_name}_{timestamp}.ndjson"
         )
         spider.logger.info(f"[json] Writing to {self.filepath}")
 
