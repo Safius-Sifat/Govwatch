@@ -71,3 +71,4 @@ coverage/
 .turbo/
 .cache/
 .puku-cli/
+.agents/
