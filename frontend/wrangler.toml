@@ -1,0 +1,11 @@
+# Cloudflare Pages config for GovWatch frontend.
+#
+# Build locally with:
+#   npm run build:pages
+# (which runs `next build && npx @cloudflare/next-on-pages`)
+# then preview with:
+#   npx wrangler pages dev .vercel/output/static
+
+name = "govwatch"
+compatibility_date = "2025-01-01"
+pages_build_output_dir = ".vercel/output/static"
