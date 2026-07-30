@@ -1,0 +1,27 @@
+# Local dev secrets for the GovWatch Worker.
+# Copy this file to .dev.vars (gitignored) and fill in your real values.
+# Wrangler reads .dev.vars automatically when running `wrangler dev`.
+
+# ============================================================
+# LLM Provider
+# ============================================================
+# Required when LLM_PROVIDER=openai (the default).
+# Get one at https://platform.openai.com/api-keys
+OPENAI_API_KEY=sk-replace-with-your-key
+
+# Optional: point at a Bangladeshi OpenAI-compatible gateway
+# (e.g. poridhi, together.ai, groq) to lower latency.
+# OPENAI_API_URL=https://api.openai.com/v1/chat/completions
+
+# Optional: change the model (default: gpt-4o-mini)
+# OPENAI_MODEL=gpt-4o
+
+# ============================================================
+# Admin
+# ============================================================
+# Required for /api/ingest and /api/ingest-batch in production.
+# Leave unset locally so dev accepts unauthenticated requests.
+# ADMIN_TOKEN=replace-with-a-long-random-string
+
+# Optional CORS origin override (default: "*")
+# ALLOWED_ORIGIN=http://localhost:3000

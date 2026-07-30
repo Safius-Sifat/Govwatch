@@ -1,0 +1,78 @@
+name = "shotto-gateway"
+main = "src/index.ts"
+compatibility_date = "2024-12-01"
+compatibility_flags = ["nodejs_compat"]
+
+# ============================================================
+# Local-only D1 binding (Miniflare creates a local SQLite file)
+# ============================================================
+
+[[d1_databases]]
+binding = "DB"
+database_name = "shotto-db"
+database_id = "local-shotto-db"   # any non-empty string works locally
+
+# ============================================================
+# Local-only Vectorize binding
+# ============================================================
+
+[[vectorize]]
+binding = "VECTORIZE"
+index_name = "shotto-chunks"
+
+# ============================================================
+# Local-only R2 binding
+# ============================================================
+
+[[r2_buckets]]
+binding = "STORAGE"
+bucket_name = "shotto-storage"
+
+# ============================================================
+# Workers AI binding
+# ============================================================
+# In local dev, this still attempts to hit the real Workers AI API.
+# If you don't have CLOUDFLARE_API_TOKEN set, embeddings will fail —
+# but everything else (D1, R2, Vectorize) works locally.
+
+[ai]
+binding = "AI"
+
+# ============================================================
+# Vars
+# ============================================================
+
+[vars]
+LOG_LEVEL = "debug"
+DEFAULT_LANGUAGE = "bn"
+SEARCH_TOP_K_VECTOR = "30"
+SEARCH_TOP_K_FTS = "30"
+SEARCH_TOP_K_FINAL = "7"
+ANOMALY_Z_THRESHOLD = "2.5"
+DEV_MODE = "true"
+# Default to OpenAI locally. Set to "workersai" if you don't have an
+# OPENAI_API_KEY and want to use the free Workers AI fallback.
+LLM_PROVIDER = "openai"
+OPENAI_MODEL = "gpt-4o-mini"
+WORKERSAI_MODEL = "@cf/meta/llama-3.1-8b-instruct"
+
+# ============================================================
+# Local dev secrets (set as vars to skip auth in dev)
+# ============================================================
+# Leave ADMIN_TOKEN unset so /api/ingest accepts unauthenticated requests.
+# Set OPENAI_API_KEY in .dev.vars (gitignored) to enable OpenAI.
+
+# ============================================================
+# Cron
+# ============================================================
+
+[triggers]
+crons = ["0 */6 * * *"]
+
+# ============================================================
+# Local persistence
+# ============================================================
+# D1 and R2 state are persisted to .wrangler/state/ between runs.
+
+[observability.logs]
+enabled = true

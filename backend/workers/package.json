@@ -1,0 +1,26 @@
+{
+  "name": "shotto-gateway",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "deploy:prod": "wrangler deploy --env production",
+    "tail": "wrangler tail",
+    "d1:create": "wrangler d1 create shotto-db",
+    "d1:execute": "wrangler d1 execute shotto-db --file=./schema/schema.sql",
+    "d1:execute:remote": "wrangler d1 execute shotto-db --remote --file=./schema/schema.sql",
+    "d1:seed": "wrangler d1 execute shotto-db --file=./schema/seed.sql",
+    "vectorize:create": "wrangler vectorize create shotto-chunks --dimensions=1024 --metric=cosine",
+    "r2:create": "wrangler r2 bucket create shotto-storage",
+    "secret:admin": "wrangler secret put ADMIN_TOKEN",
+    "secret:origin": "wrangler secret put ALLOWED_ORIGIN",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20241218.0",
+    "typescript": "^5.6.0",
+    "wrangler": "^3.90.0"
+  }
+}

@@ -1,0 +1,70 @@
+name = "shotto-gateway"
+main = "src/index.ts"
+compatibility_date = "2024-12-01"
+compatibility_flags = ["nodejs_compat"]
+
+# ============================================================
+# Cloudflare Bindings
+# ============================================================
+
+# D1 (relational metadata + FTS5)
+[[d1_databases]]
+binding = "DB"
+database_name = "shotto-db"
+database_id = "REPLACE_WITH_YOUR_D1_ID"  # wrangler d1 create shotto-db
+
+# Vectorize (semantic embeddings)
+[[vectorize]]
+binding = "VECTORIZE"
+index_name = "shotto-chunks"
+
+# R2 (raw PDFs and NDJSON staging)
+[[r2_buckets]]
+binding = "STORAGE"
+bucket_name = "shotto-storage"
+
+# Workers AI (Llama 3.1 8B + bge-m3)
+[ai]
+binding = "AI"
+
+# ============================================================
+# Vars (non-secret configuration)
+# ============================================================
+
+[vars]
+LOG_LEVEL = "info"
+DEFAULT_LANGUAGE = "bn"
+SEARCH_TOP_K_VECTOR = "30"
+SEARCH_TOP_K_FTS = "30"
+SEARCH_TOP_K_FINAL = "7"
+ANOMALY_Z_THRESHOLD = "2.5"
+# Default to OpenAI (much better Bangla). Set to "workersai" to use the
+# free Workers AI Llama 3.1 8B fallback instead.
+LLM_PROVIDER = "openai"
+OPENAI_MODEL = "gpt-4o-mini"
+WORKERSAI_MODEL = "@cf/meta/llama-3.1-8b-instruct"
+
+# ============================================================
+# Secrets (set via: wrangler secret put SECRET_NAME)
+# ============================================================
+# OPENAI_API_KEY — required when LLM_PROVIDER=openai (default)
+# ADMIN_TOKEN — required for /api/ingest and /api/ingest-batch
+# ALLOWED_ORIGIN — CORS origin for the frontend
+#
+# OpenAI (Bangladeshi providers like poridhi may also work — override
+# OPENAI_API_URL to point at them):
+#   OPENAI_API_URL defaults to https://api.openai.com/v1/chat/completions
+
+# ============================================================
+# Cron Triggers (production: 6-hour incremental re-crawl)
+# ============================================================
+
+[triggers]
+crons = ["0 */6 * * *"]
+
+# ============================================================
+# Observability
+# ============================================================
+
+[observability.logs]
+enabled = true
