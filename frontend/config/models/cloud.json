@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "models": {
+    "quick": {
+      "id": "stub",
+      "name": "stub",
+      "provider": "stub"
+    },
+    "adaptive": {
+      "id": "stub",
+      "name": "stub",
+      "provider": "stub"
+    }
+  }
+}
