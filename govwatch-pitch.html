@@ -1,0 +1,1690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GovWatch — সত্য প্রকাশ · Hackathon Pitch 2026</title>
+
+<!-- Fonts: People's Platform stack + Hind Siliguri for Bangla -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Caveat+Brush&family=Archivo+Narrow:wght@400;500;600;700&family=DM+Mono:wght@300;400;500&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+/* ===========================================
+   THEME TOKENS — People's Platform
+   =========================================== */
+:root {
+  /* Surfaces */
+  --paper: #F5F2EA;
+  --cream: #F4E9D6;
+  --ink: #0E0E14;
+  --ink-soft: #1a1a22;
+
+  /* Functional colors */
+  --blue: #2C2CDC;
+  --blue-deep: #1B1BB0;
+  --orange: #F2A03A;
+  --orange-deep: #E89321;
+  --red: #E83A2A;
+  --red-deep: #B7281C;
+
+  /* Type families */
+  --font-display: 'Alfa Slab One', serif;
+  --font-body: 'Archivo Narrow', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+  --font-script: 'Caveat Brush', cursive;
+  --font-bn: 'Hind Siliguri', 'Noto Sans Bengali', sans-serif;
+
+  /* Animation */
+  --ease-out-quart: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ===========================================
+   MANDATORY VIEWPORT BASE (copied verbatim)
+   =========================================== */
+*, *::before, *::after { box-sizing: border-box; }
+html, body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+    background: var(--ink);
+    font-family: var(--font-body);
+}
+.deck-viewport {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    background: var(--ink);
+}
+.deck-stage {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 1920px;
+    height: 1080px;
+    overflow: hidden;
+    transform-origin: 0 0;
+    background: var(--paper);
+}
+.slide {
+    position: absolute;
+    inset: 0;
+    width: 1920px;
+    height: 1080px;
+    overflow: hidden;
+    display: block;
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+    background: var(--paper);
+}
+.slide.active, .slide.visible {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+    z-index: 1;
+}
+img, video, canvas, svg { max-width: 100%; max-height: 100%; }
+
+.deck-controls {
+    position: fixed;
+    left: 50%;
+    bottom: 22px;
+    transform: translateX(-50%);
+    z-index: 1000;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.2s !important;
+    }
+}
+
+/* ===========================================
+   GRAIN OVERLAY (every slide)
+   =========================================== */
+.grain::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      radial-gradient(rgba(0,0,0,0.06) 1px, transparent 1px),
+      radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px);
+    background-size: 3px 3px, 5px 5px;
+    background-position: 0 0, 1px 2px;
+    mix-blend-mode: multiply;
+    opacity: 0.55;
+    z-index: 2;
+}
+
+/* ===========================================
+   UNIVERSAL CHROME: TOPBAR + FOOTER
+   =========================================== */
+
+/* Topbar — blue band with red bottom border */
+.topbar {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 80px;
+    background: var(--blue);
+    color: var(--cream);
+    padding: 0 70px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 6px solid var(--ink);
+    z-index: 5;
+}
+.topbar.surface-paper {
+    background: var(--paper);
+    color: var(--ink);
+    border-bottom: 6px solid var(--ink);
+}
+.topbar .brand {
+    font-family: var(--font-display);
+    font-size: 28px;
+    letter-spacing: 0.005em;
+    text-transform: uppercase;
+}
+.topbar.surface-paper .brand { color: var(--ink); }
+.topbar.surface-paper .brand .dot { color: var(--orange); }
+.topbar .meta {
+    font-family: var(--font-mono);
+    font-size: 18px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+.topbar .meta .dot { color: var(--orange); }
+.topbar .meta .pill {
+    border: 2px solid currentColor;
+    padding: 5px 14px;
+    border-radius: 999px;
+    font-size: 14px;
+}
+
+/* Bottom ink rule footer */
+.foot-rule {
+    position: absolute;
+    bottom: 90px; left: 70px; right: 70px;
+    height: 6px;
+    background: var(--ink);
+    z-index: 4;
+}
+.foot {
+    position: absolute;
+    bottom: 36px; left: 70px; right: 70px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--font-mono);
+    font-size: 16px;
+    letter-spacing: 0.20em;
+    text-transform: uppercase;
+    color: var(--ink);
+    z-index: 4;
+}
+.foot .stack { color: var(--orange); }
+.foot .page { font-weight: 600; }
+
+/* Orange ribbon — bottom strip on data slides */
+.ribbon {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 60px;
+    background: var(--orange);
+    color: var(--ink);
+    border-top: 6px solid var(--ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono);
+    font-size: 18px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    font-weight: 600;
+    z-index: 5;
+}
+.ribbon .star { color: var(--red); margin: 0 16px; }
+
+/* ===========================================
+   ENTRANCE ANIMATIONS
+   =========================================== */
+.reveal {
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity 0.7s var(--ease-out-quart),
+                transform 0.7s var(--ease-out-quart);
+}
+.slide.visible .reveal {
+    opacity: 1;
+    transform: translateY(0);
+}
+.slide.visible .reveal.d1 { transition-delay: 0.05s; }
+.slide.visible .reveal.d2 { transition-delay: 0.15s; }
+.slide.visible .reveal.d3 { transition-delay: 0.25s; }
+.slide.visible .reveal.d4 { transition-delay: 0.35s; }
+.slide.visible .reveal.d5 { transition-delay: 0.45s; }
+.slide.visible .reveal.d6 { transition-delay: 0.55s; }
+.slide.visible .reveal.d7 { transition-delay: 0.65s; }
+.slide.visible .reveal.d8 { transition-delay: 0.75s; }
+.slide.visible .reveal.d9 { transition-delay: 0.85s; }
+
+/* ===========================================
+   SHARED COMPONENTS
+   =========================================== */
+
+/* Section ordinal — large orange numeral + mono tag */
+.ordinal {
+    display: inline-block;
+    font-family: var(--font-display);
+    font-size: 140px;
+    line-height: 1;
+    color: var(--orange);
+    text-shadow: 6px 6px 0 var(--red), 12px 12px 0 var(--red-deep);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+}
+.ordinal-tag {
+    border-top: 3px solid var(--ink);
+    padding-top: 12px;
+    font-family: var(--font-mono);
+    font-size: 18px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink);
+    font-weight: 500;
+    display: inline-block;
+}
+
+/* Diamond bullet */
+.diamond {
+    position: relative;
+    padding-left: 48px;
+}
+.diamond::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 8px;
+    width: 22px;
+    height: 22px;
+    background: var(--red);
+    border-radius: 4px;
+    transform: rotate(45deg);
+}
+.diamond.on-blue::before { background: var(--orange); }
+
+/* KPI card */
+.kpi-card {
+    border: 5px solid var(--ink);
+    padding: 32px 36px;
+    background: var(--paper);
+    box-shadow: 8px 8px 0 var(--red);
+}
+.kpi-card.alt {
+    background: var(--blue);
+    color: var(--cream);
+    border-color: var(--ink);
+    box-shadow: 8px 8px 0 var(--red);
+}
+.kpi-value {
+    font-family: var(--font-display);
+    font-size: 96px;
+    line-height: 0.9;
+    color: var(--orange);
+    text-shadow: 4px 4px 0 var(--red);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+}
+.kpi-card.alt .kpi-value { color: var(--orange); }
+.kpi-label {
+    font-family: var(--font-mono);
+    font-size: 16px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink);
+    line-height: 1.4;
+}
+.kpi-card.alt .kpi-label { color: var(--cream); }
+
+/* Stamp / badge */
+.stamp {
+    display: inline-block;
+    background: var(--red);
+    color: var(--cream);
+    padding: 10px 22px;
+    font-family: var(--font-display);
+    font-size: 22px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    transform: rotate(-3deg);
+    border: 4px solid var(--cream);
+    box-shadow: 6px 6px 0 var(--blue);
+}
+.stamp.circle {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: var(--cream);
+    color: var(--blue);
+    border: 6px solid var(--orange);
+    transform: rotate(-9deg);
+    box-shadow: 8px 8px 0 var(--red);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: 22px;
+    padding: 24px;
+    line-height: 1.05;
+}
+
+/* Handwritten annotation */
+.script {
+    font-family: var(--font-script);
+    color: var(--red);
+    text-transform: lowercase;
+    line-height: 1;
+}
+.script.blue { color: var(--blue); }
+.script.ink { color: var(--ink); }
+
+/* Underline rule */
+.underline-rule {
+    height: 14px;
+    background: var(--ink);
+    width: 30%;
+    margin-top: 50px;
+}
+
+/* Lede block */
+.lede {
+    font-family: var(--font-body);
+    font-weight: 500;
+    font-size: 28px;
+    line-height: 1.4;
+    color: var(--ink);
+    border-left: 4px solid var(--ink);
+    padding-left: 28px;
+}
+
+/* ===========================================
+   SLIDE-SPECIFIC
+   =========================================== */
+
+/* ----- SLIDE 1: TITLE ----- */
+.s1-headline {
+    position: absolute;
+    top: 220px; left: 80px;
+    width: 1300px;
+}
+.s1-h1 {
+    font-family: var(--font-display);
+    font-size: 220px;
+    line-height: 0.85;
+    color: var(--ink);
+    text-transform: uppercase;
+    letter-spacing: -0.005em;
+    margin: 0;
+}
+.s1-h1 .strike {
+    position: relative;
+    display: inline-block;
+}
+.s1-h1 .strike::after {
+    content: '';
+    position: absolute;
+    left: -6px; right: -6px;
+    top: 50%;
+    height: 28px;
+    background: var(--orange);
+    transform: translateY(-50%) rotate(-1deg);
+    z-index: -1;
+}
+.s1-h1 .orange { color: var(--orange); text-shadow: 6px 6px 0 var(--red); }
+.s1-bn {
+    font-family: var(--font-bn);
+    font-weight: 700;
+    font-size: 64px;
+    color: var(--ink);
+    line-height: 1.2;
+    margin-top: 24px;
+    display: block;
+}
+.s1-script {
+    position: absolute;
+    top: 920px; left: 80px;
+    font-size: 64px;
+    transform: rotate(-4deg);
+}
+.s1-stamp {
+    position: absolute;
+    top: 200px; right: 80px;
+}
+.s1-sub {
+    position: absolute;
+    bottom: 200px; left: 80px; right: 80px;
+    font-family: var(--font-body);
+    font-weight: 500;
+    font-size: 26px;
+    line-height: 1.4;
+    color: var(--ink);
+    max-width: 1100px;
+}
+
+/* ----- SLIDE 2: THE PROBLEM ----- */
+.s2-main {
+    position: absolute;
+    top: 150px; left: 80px; right: 80px;
+    bottom: 180px;
+    display: grid;
+    grid-template-columns: 600px 1fr;
+    gap: 60px;
+}
+.s2-left h2 {
+    font-family: var(--font-display);
+    font-size: 140px;
+    line-height: 0.88;
+    color: var(--ink);
+    text-transform: uppercase;
+    text-shadow: 5px 5px 0 var(--red);
+    margin: 0 0 24px;
+}
+.s2-bn {
+    font-family: var(--font-bn);
+    font-weight: 600;
+    font-size: 30px;
+    line-height: 1.4;
+    color: var(--ink-soft);
+    margin-bottom: 24px;
+}
+.s2-orphans {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+.s2-orphan {
+    background: var(--paper);
+    border: 5px solid var(--ink);
+    box-shadow: 8px 8px 0 var(--red);
+    padding: 28px 32px;
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+}
+.s2-orphan-num {
+    font-family: var(--font-display);
+    font-size: 64px;
+    line-height: 1;
+    color: var(--orange);
+    text-shadow: 4px 4px 0 var(--red);
+    min-width: 80px;
+}
+.s2-orphan-body h3 {
+    font-family: var(--font-display);
+    font-size: 26px;
+    line-height: 1.05;
+    color: var(--ink);
+    text-transform: uppercase;
+    margin: 0 0 8px;
+}
+.s2-orphan-body p {
+    font-family: var(--font-body);
+    font-weight: 500;
+    font-size: 18px;
+    line-height: 1.4;
+    color: var(--ink);
+    margin: 0;
+}
+.s2-orphan-body .bn {
+    font-family: var(--font-bn);
+    font-weight: 500;
+    font-size: 17px;
+    display: block;
+    margin-top: 4px;
+    color: var(--ink-soft);
+}
+
+/* ----- SLIDE 3: THE DEMO ----- */
+.s3-grid {
+    position: absolute;
+    top: 130px; left: 80px; right: 80px;
+    bottom: 180px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+}
+.s3-panel {
+    background: var(--paper);
+    border: 5px solid var(--ink);
+    box-shadow: 10px 10px 0 var(--red);
+    padding: 36px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+.s3-panel.alt {
+    background: var(--blue);
+    color: var(--cream);
+    border-color: var(--ink);
+    box-shadow: 10px 10px 0 var(--red);
+}
+.s3-panel-label {
+    font-family: var(--font-mono);
+    font-size: 16px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink);
+    border-top: 3px solid var(--ink);
+    padding-top: 14px;
+}
+.s3-panel.alt .s3-panel-label {
+    color: var(--orange);
+    border-top-color: var(--orange);
+}
+.s3-query {
+    font-family: var(--font-bn);
+    font-weight: 600;
+    font-size: 26px;
+    line-height: 1.5;
+    color: var(--ink);
+    padding: 20px 24px;
+    background: var(--cream);
+    border-left: 5px solid var(--orange);
+}
+.s3-answer {
+    font-family: var(--font-body);
+    font-weight: 500;
+    font-size: 19px;
+    line-height: 1.5;
+    color: var(--cream);
+}
+.s3-answer .bn {
+    font-family: var(--font-bn);
+    font-weight: 600;
+}
+.s3-answer .cite {
+    display: inline-block;
+    background: var(--orange);
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 14px;
+    padding: 2px 8px;
+    border-radius: 3px;
+    margin: 0 2px;
+}
+.s3-flags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.s3-flag {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    padding: 7px 14px;
+    border: 2px solid var(--cream);
+    border-radius: 4px;
+    color: var(--cream);
+    letter-spacing: 0.05em;
+}
+.s3-flag.alert {
+    background: var(--red);
+    border-color: var(--red);
+    color: var(--cream);
+}
+.s3-flag.warn {
+    background: var(--orange);
+    border-color: var(--orange);
+    color: var(--ink);
+}
+.s3-cite-card {
+    background: var(--paper);
+    border: 3px solid var(--ink);
+    padding: 14px 18px;
+    display: flex;
+    gap: 14px;
+    align-items: center;
+}
+.s3-cite-card .id {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--ink);
+    background: var(--orange);
+    padding: 4px 10px;
+    border-radius: 3px;
+}
+.s3-cite-card .desc {
+    font-family: var(--font-body);
+    font-weight: 500;
+    font-size: 15px;
+    color: var(--ink);
+}
+.s3-cite-card .desc .small {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--ink-soft);
+    display: block;
+}
+
+/* ----- SLIDE 4: THE ARCHITECTURE ----- */
+.s4-flow {
+    position: absolute;
+    top: 150px; left: 80px; right: 80px;
+    bottom: 180px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 32px;
+}
+.s4-pillar {
+    background: var(--paper);
+    border: 5px solid var(--ink);
+    box-shadow: 10px 10px 0 var(--red);
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+.s4-pillar.alt {
+    background: var(--blue);
+    color: var(--cream);
+}
+.s4-pillar.alt h3 { color: var(--orange); }
+.s4-pillar.alt .s4-pillar-tag { color: var(--cream); border-top-color: var(--cream); }
+.s4-pillar.alt p { color: var(--cream); }
+.s4-pillar.alt .s4-pillar-list li { color: var(--cream); }
+.s4-pillar-num {
+    font-family: var(--font-display);
+    font-size: 88px;
+    line-height: 1;
+    color: var(--orange);
+    text-shadow: 4px 4px 0 var(--red);
+    text-transform: uppercase;
+}
+.s4-pillar h3 {
+    font-family: var(--font-display);
+    font-size: 42px;
+    line-height: 1;
+    color: var(--ink);
+    text-transform: uppercase;
+    margin: 0;
+}
+.s4-pillar-tag {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink);
+    border-top: 3px solid var(--ink);
+    padding-top: 12px;
+}
+.s4-pillar p {
+    font-family: var(--font-body);
+    font-weight: 500;
+    font-size: 18px;
+    line-height: 1.4;
+    color: var(--ink);
+    margin: 0;
+}
+.s4-pillar-list {
+    list-style: none;
+    padding: 0;
+    margin: 12px 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.s4-pillar-list li {
+    font-family: var(--font-body);
+    font-weight: 500;
+    font-size: 16px;
+    color: var(--ink);
+    padding-left: 28px;
+    position: relative;
+    line-height: 1.35;
+}
+.s4-pillar-list li::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 6px;
+    width: 14px;
+    height: 14px;
+    background: var(--red);
+    border-radius: 3px;
+    transform: rotate(45deg);
+}
+.s4-pillar.alt .s4-pillar-list li::before { background: var(--orange); }
+.s4-pillar .small {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.05em;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+}
+
+/* ----- SLIDE 5: THE STACK ----- */
+.s5-stack {
+    position: absolute;
+    top: 150px; left: 80px; right: 80px;
+    bottom: 180px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 50px;
+}
+.s5-stack-left {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 24px;
+}
+.s5-stack-right {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+.s5-stack h2 {
+    font-family: var(--font-display);
+    font-size: 96px;
+    line-height: 0.95;
+    color: var(--ink);
+    text-transform: uppercase;
+    text-shadow: 5px 5px 0 var(--red);
+    margin: 0;
+}
+.s5-stack .bn-sub {
+    font-family: var(--font-bn);
+    font-weight: 600;
+    font-size: 26px;
+    color: var(--ink-soft);
+    line-height: 1.4;
+    margin-top: 12px;
+}
+.s5-lede {
+    border-left: 4px solid var(--ink);
+    padding-left: 24px;
+    font-family: var(--font-body);
+    font-weight: 500;
+    font-size: 22px;
+    line-height: 1.4;
+    color: var(--ink);
+}
+.s5-row {
+    display: grid;
+    grid-template-columns: 130px 1fr;
+    gap: 18px;
+    padding: 18px 22px;
+    background: var(--paper);
+    border: 4px solid var(--ink);
+    box-shadow: 6px 6px 0 var(--red);
+    align-items: center;
+}
+.s5-row.alt { background: var(--blue); color: var(--cream); }
+.s5-row.alt .s5-row-label { color: var(--orange); border-right-color: var(--cream); }
+.s5-row.alt .s5-row-name { color: var(--cream); }
+.s5-row.alt .s5-row-desc { color: var(--cream); }
+.s5-row-label {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--red);
+    border-right: 3px solid var(--ink);
+    padding-right: 14px;
+    text-align: center;
+}
+.s5-row-name {
+    font-family: var(--font-display);
+    font-size: 24px;
+    color: var(--ink);
+    text-transform: uppercase;
+    line-height: 1;
+    margin-bottom: 6px;
+}
+.s5-row-desc {
+    font-family: var(--font-body);
+    font-weight: 500;
+    font-size: 15px;
+    color: var(--ink-soft);
+    line-height: 1.3;
+}
+
+/* ----- SLIDE 6: THE WINS ----- */
+.s6-kpis {
+    position: absolute;
+    top: 180px; left: 80px; right: 80px;
+    bottom: 180px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 36px;
+}
+.s6-kpis .kpi-card { padding: 40px; }
+.s6-kpis .kpi-value { font-size: 130px; }
+.s6-kpis .kpi-label { font-size: 18px; }
+.s6-marquee {
+    position: absolute;
+    top: 130px; left: 80px; right: 80px;
+    text-align: center;
+}
+.s6-marquee h2 {
+    font-family: var(--font-display);
+    font-size: 92px;
+    line-height: 0.95;
+    color: var(--ink);
+    text-transform: uppercase;
+    text-shadow: 5px 5px 0 var(--red);
+    margin: 0;
+}
+.s6-bn {
+    font-family: var(--font-bn);
+    font-weight: 600;
+    font-size: 28px;
+    color: var(--ink-soft);
+    margin-top: 12px;
+}
+
+/* ----- SLIDE 7: WHY NOW ----- */
+.s7-grid {
+    position: absolute;
+    top: 150px; left: 80px; right: 80px;
+    bottom: 180px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 50px;
+}
+.s7-left h2 {
+    font-family: var(--font-display);
+    font-size: 130px;
+    line-height: 0.9;
+    color: var(--ink);
+    text-transform: uppercase;
+    text-shadow: 6px 6px 0 var(--red);
+    margin: 0 0 20px;
+}
+.s7-bn {
+    font-family: var(--font-bn);
+    font-weight: 600;
+    font-size: 32px;
+    line-height: 1.3;
+    color: var(--ink-soft);
+    margin-bottom: 24px;
+}
+.s7-quote {
+    font-family: var(--font-display);
+    font-size: 36px;
+    line-height: 1.05;
+    color: var(--ink);
+    text-transform: uppercase;
+    letter-spacing: 0.005em;
+    padding: 32px 0;
+    border-top: 6px solid var(--ink);
+    border-bottom: 6px solid var(--ink);
+    margin: 24px 0 0;
+}
+.s7-right {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+}
+.s7-point {
+    background: var(--paper);
+    border: 5px solid var(--ink);
+    box-shadow: 8px 8px 0 var(--red);
+    padding: 28px;
+}
+.s7-point.alt {
+    background: var(--blue);
+    color: var(--cream);
+    box-shadow: 8px 8px 0 var(--red);
+}
+.s7-point h3 {
+    font-family: var(--font-display);
+    font-size: 30px;
+    line-height: 1;
+    color: var(--ink);
+    text-transform: uppercase;
+    margin: 0 0 12px;
+    letter-spacing: 0.005em;
+}
+.s7-point.alt h3 { color: var(--orange); }
+.s7-point p {
+    font-family: var(--font-body);
+    font-weight: 500;
+    font-size: 17px;
+    line-height: 1.4;
+    color: var(--ink);
+    margin: 0;
+}
+.s7-point.alt p { color: var(--cream); }
+.s7-point .bn {
+    font-family: var(--font-bn);
+    font-weight: 500;
+    font-size: 16px;
+    display: block;
+    margin-top: 6px;
+    color: var(--ink-soft);
+}
+.s7-point.alt .bn { color: var(--cream); opacity: 0.85; }
+
+/* ----- SLIDE 8: CLOSING / ASK ----- */
+.s8-closing {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: var(--blue);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 0 120px;
+    overflow: hidden;
+}
+.s8-closing::before {
+    content: '';
+    position: absolute;
+    inset: 48px;
+    border: 6px solid var(--cream);
+    z-index: 1;
+}
+.s8-closing-inner {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+}
+.s8-stamp {
+    position: absolute;
+    top: 120px; right: 120px;
+    z-index: 3;
+}
+.s8-closing h2 {
+    font-family: var(--font-display);
+    font-size: 200px;
+    line-height: 0.85;
+    color: var(--cream);
+    text-shadow: 8px 8px 0 var(--red), 16px 16px 0 var(--red-deep);
+    text-transform: uppercase;
+    margin: 0 0 30px;
+    letter-spacing: -0.005em;
+}
+.s8-closing .orange { color: var(--orange); }
+.s8-bn-big {
+    font-family: var(--font-bn);
+    font-weight: 700;
+    font-size: 60px;
+    line-height: 1.2;
+    color: var(--cream);
+    margin-bottom: 40px;
+    max-width: 1100px;
+}
+.s8-call {
+    font-family: var(--font-body);
+    font-weight: 500;
+    font-size: 26px;
+    line-height: 1.4;
+    color: var(--cream);
+    max-width: 1000px;
+    margin-bottom: 30px;
+}
+.s8-call .accent {
+    background: var(--orange);
+    color: var(--ink);
+    padding: 2px 12px;
+}
+.s8-signoff {
+    font-family: var(--font-mono);
+    font-size: 18px;
+    letter-spacing: 0.20em;
+    text-transform: uppercase;
+    color: var(--cream);
+    border-top: 3px solid var(--cream);
+    padding-top: 14px;
+    margin-top: 30px;
+    display: inline-block;
+}
+.s8-script {
+    position: absolute;
+    bottom: 200px; right: 140px;
+    font-size: 72px;
+    color: var(--orange);
+    transform: rotate(-4deg);
+    z-index: 3;
+}
+
+/* ===========================================
+   EDIT MODE
+   =========================================== */
+.edit-hotzone {
+    position: fixed;
+    top: 0; left: 0;
+    width: 80px; height: 80px;
+    z-index: 10000;
+    cursor: pointer;
+}
+.edit-toggle {
+    position: fixed;
+    top: 18px; left: 18px;
+    background: var(--red);
+    color: var(--cream);
+    border: 4px solid var(--ink);
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    box-shadow: 4px 4px 0 var(--ink);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    z-index: 10001;
+    font-family: var(--font-display);
+}
+.edit-toggle.show, .edit-toggle.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+.edit-mode [contenteditable] {
+    outline: 2px dashed var(--red);
+    outline-offset: 4px;
+    cursor: text;
+}
+
+/* Page counter (outside slide) */
+.page-counter {
+    position: fixed;
+    right: 22px;
+    bottom: 22px;
+    background: var(--ink);
+    color: var(--cream);
+    padding: 8px 16px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    border-radius: 4px;
+    z-index: 1000;
+}
+</style>
+</head>
+<body>
+
+<!-- Edit affordance -->
+<div class="edit-hotzone"></div>
+<button class="edit-toggle" id="editToggle" title="Edit mode (E)">✎</button>
+
+<div class="deck-viewport">
+<main class="deck-stage" id="deckStage">
+
+  <!-- ===========================================
+       SLIDE 1 — TITLE
+       =========================================== -->
+  <section class="slide grain active visible">
+    <div class="topbar">
+      <div class="brand">GovWatch<span class="dot">.</span></div>
+      <div class="meta">
+        <span>সত্য প্রকাশ</span>
+        <span class="dot">·</span>
+        <span>Hackathon Demo 2026</span>
+        <span class="pill">Live Build</span>
+      </div>
+    </div>
+
+    <div class="s1-headline">
+      <h1 class="s1-h1 reveal d1">
+        <span class="strike">Who</span> bought<br/>
+        <span class="orange">your tax</span> taka?
+      </h1>
+      <span class="s1-bn reveal d3">কে নিচ্ছে আপনার টাকা?</span>
+    </div>
+
+    <div class="s1-stamp reveal d4">
+      <div class="stamp">⚠ Government money. Public records.</div>
+    </div>
+
+    <div class="s1-script">
+      <span class="script">audit the state, citizen.</span>
+    </div>
+
+    <div class="s1-sub reveal d5">
+      A bilingual AI that reads a decade of Bangladesh government tenders, gazettes,
+      and vendor records — and answers in plain Bangla or English with citations,
+      price-anomaly flags, and vendor-collusion graphs.
+    </div>
+
+    <div class="ribbon">
+      Cloudflare Edge <span class="star">★</span> D1 · Vectorize · R2 <span class="star">★</span> Workers AI <span class="star">★</span> Open Source
+    </div>
+  </section>
+
+  <!-- ===========================================
+       SLIDE 2 — THE PROBLEM
+       =========================================== -->
+  <section class="slide grain">
+    <div class="topbar surface-paper">
+      <div class="brand">GovWatch<span class="dot">.</span></div>
+      <div class="meta">
+        <span>Section 01</span>
+        <span class="dot">·</span>
+        <span>The Problem</span>
+      </div>
+    </div>
+
+    <div class="s2-main">
+      <div class="s2-left">
+        <h2 class="reveal d1">Public<br/>money.<br/>Hidden<br/>books.</h2>
+        <div class="s2-bn reveal d3">সরকারি টাকা — সাধারণ মানুষের অজানা।</div>
+        <div class="reveal d4">
+          <span class="script" style="font-size: 56px;">the records exist. nobody can read them.</span>
+        </div>
+      </div>
+
+      <div class="s2-orphans">
+        <div class="s2-orphan reveal d2">
+          <div class="s2-orphan-num">০১</div>
+          <div class="s2-orphan-body">
+            <h3>Trapped in PDFs</h3>
+            <p>Ten years of Bangladesh e-procurement data, gazettes, and contracts — locked in scanned
+            PDFs that aren't text-searchable.</p>
+            <span class="bn">দশ বছরের সরকারি দলিল — স্ক্যান করা পিডিএফে আটকে আছে।</span>
+          </div>
+        </div>
+
+        <div class="s2-orphan reveal d3">
+          <div class="s2-orphan-num">০২</div>
+          <div class="s2-orphan-body">
+            <h3>Bangla-First, English-Second</h3>
+            <p>Only the official Bangla gazettes carry binding language. But most journalists and
+            oversight bodies query in English.</p>
+            <span class="bn">বাংলা গেজেট — কিন্তু সাংবাদিকরা ইংরেজিতে খোঁজেন।</span>
+          </div>
+        </div>
+
+        <div class="s2-orphan reveal d4">
+          <div class="s2-orphan-num">০৩</div>
+          <div class="s2-orphan-body">
+            <h3>Patterns Invisible to Humans</h3>
+            <p>Price inflation, vendor collusion, shared directors — buried across millions of
+            rows. A human can't spot the pattern.</p>
+            <span class="bn">লুকানো দুর্নীতির ছাপ — মানুষের চোখে ধরা পড়ে না।</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="foot-rule"></div>
+    <div class="foot">
+      <div><span class="stack">▢</span> 01 / 08 · GovWatch · Hackathon Pitch</div>
+      <div class="page">Problem</div>
+    </div>
+  </section>
+
+  <!-- ===========================================
+       SLIDE 3 — THE DEMO
+       =========================================== -->
+  <section class="slide grain">
+    <div class="topbar surface-paper">
+      <div class="brand">GovWatch<span class="dot">.</span></div>
+      <div class="meta">
+        <span>Section 02</span>
+        <span class="dot">·</span>
+        <span>Live Demo</span>
+      </div>
+    </div>
+
+    <div class="s3-grid">
+      <div class="s3-panel reveal d1">
+        <div class="s3-panel-label">▢ Query · বাংলা</div>
+        <div class="s3-query">
+          হবিগঞ্জে গত ৬ মাসে কোন ঠিকাদার সবচেয়ে
+          বেশি টেন্ডার পেয়েছে?
+        </div>
+        <div class="s3-panel-label">▢ English Equivalent</div>
+        <div class="s3-query" style="font-family: var(--font-body); font-size: 20px;">
+          Which vendor won the most DPHE Habiganj tenders in the last 6 months?
+        </div>
+      </div>
+
+      <div class="s3-panel alt reveal d3">
+        <div class="s3-panel-label">▢ Answer · Streamed</div>
+        <div class="s3-answer">
+          <span class="bn">M/S Rahman Enterprise</span> জিতেছে <span class="cite">৪</span>টি টেন্ডার —
+          মোট <span class="bn">৳৪.৫ কোটি</span> অনুমোদিত <span class="cite">২</span>.
+          <br/><br/>
+          Awarded rate per tube-well: <span class="bn">৳৯০,০০০</span>.
+          Baseline median: <span class="bn">৳২৮,০০০</span>. Deviation <span class="cite">+৩১০%</span>.
+          <br/><br/>
+          <span class="bn">একই NID-যুক্ত পরিচালক</span> আরও ২টি কোম্পানির সাথে যুক্ত <span class="cite">৭</span>.
+        </div>
+        <div class="s3-flags">
+          <div class="s3-flag alert">🚨 +310% price inflation</div>
+          <div class="s3-flag warn">🕸 shared director</div>
+          <div class="s3-flag">⚠ anomaly z = 3.2</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="position: absolute; top: 750px; left: 80px; right: 80px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
+      <div class="s3-cite-card reveal d5">
+        <div class="id">[1]</div>
+        <div class="desc">e-GP 894321<span class="small">DPHE Habiganj tender · Page 3</span></div>
+      </div>
+      <div class="s3-cite-card reveal d6">
+        <div class="id">[2]</div>
+        <div class="desc">Award Record PDF<span class="small">Contract · Page 1</span></div>
+      </div>
+      <div class="s3-cite-card reveal d7">
+        <div class="id">[7]</div>
+        <div class="desc">Vendor Graph<span class="small">Neo4j · shared NID match</span></div>
+      </div>
+    </div>
+
+    <div class="foot-rule"></div>
+    <div class="foot">
+      <div><span class="stack">▢</span> 02 / 08 · GovWatch · Hackathon Pitch</div>
+      <div class="page">Demo</div>
+    </div>
+  </section>
+
+  <!-- ===========================================
+       SLIDE 4 — ARCHITECTURE / THREE PILLARS
+       =========================================== -->
+  <section class="slide grain">
+    <div class="topbar surface-paper">
+      <div class="brand">GovWatch<span class="dot">.</span></div>
+      <div class="meta">
+        <span>Section 03</span>
+        <span class="dot">·</span>
+        <span>How It Works</span>
+      </div>
+    </div>
+
+    <div class="s4-flow">
+      <div class="s4-pillar reveal d1">
+        <div class="s4-pillar-num">01</div>
+        <h3>Crawl</h3>
+        <div class="s4-pillar-tag">▢ Scrapy + Playwright</div>
+        <p>Pull e-GP tenders, BG Press gazettes, and ministry PDFs into Cloudflare R2.</p>
+        <ul class="s4-pillar-list">
+          <li>Scrapy for static PDFs — 1,000 req/min</li>
+          <li>Playwright for ASP.NET state on e-GP</li>
+          <li>Cron every 6 hours via Cloudflare Queues</li>
+        </ul>
+      </div>
+
+      <div class="s4-pillar alt reveal d2">
+        <div class="s4-pillar-num">02</div>
+        <h3>Understand</h3>
+        <div class="s4-pillar-tag">▢ PaddleOCR · bge-m3</div>
+        <p>OCR scanned Bangla, split into clause-aware chunks, embed with bge-m3.</p>
+        <ul class="s4-pillar-list">
+          <li>Bangla OCR on scanned PDFs</li>
+          <li>1,024-dim multilingual vectors</li>
+          <li>Hybrid: Vectorize + D1 FTS5</li>
+        </ul>
+      </div>
+
+      <div class="s4-pillar reveal d3">
+        <div class="s4-pillar-num">03</div>
+        <h3>Expose</h3>
+        <div class="s4-pillar-tag">▢ Cross-encoder · Neo4j</div>
+        <p>Re-rank, generate cited answers, and surface anomalies + collusion graphs.</p>
+        <ul class="s4-pillar-list">
+          <li>bge-reranker-v2-m3 + RRF fusion</li>
+          <li>Price z-score &gt; 2.5 → red flag</li>
+          <li>Shared NID → Neo4j vendor graph</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="foot-rule"></div>
+    <div class="foot">
+      <div><span class="stack">▢</span> Edge-native · Cloudflare Workers AI · LangGraph orchestration</div>
+      <div class="page">03 / 08 · Architecture</div>
+    </div>
+  </section>
+
+  <!-- ===========================================
+       SLIDE 5 — THE STACK
+       =========================================== -->
+  <section class="slide grain">
+    <div class="topbar surface-paper">
+      <div class="brand">GovWatch<span class="dot">.</span></div>
+      <div class="meta">
+        <span>Section 04</span>
+        <span class="dot">·</span>
+        <span>The Stack</span>
+      </div>
+    </div>
+
+    <div class="s5-stack">
+      <div class="s5-stack-left reveal d1">
+        <h2>Sovereign<br/>edge stack.</h2>
+        <div class="bn-sub">বাংলাদেশের ডেটা — বাংলাদেশের এজে।</div>
+        <div class="s5-lede">
+          Built entirely on Cloudflare's edge — D1, Vectorize, R2, Workers AI —
+          so the platform runs close to users in Dhaka and costs almost nothing
+          to operate at scale.
+        </div>
+      </div>
+
+      <div class="s5-stack-right">
+        <div class="s5-row reveal d2">
+          <div class="s5-row-label">R2</div>
+          <div>
+            <div class="s5-row-name">Object Store</div>
+            <div class="s5-row-desc">Raw PDFs, gzette archive. Zero-egress.</div>
+          </div>
+        </div>
+        <div class="s5-row alt reveal d3">
+          <div class="s5-row-label">D1</div>
+          <div>
+            <div class="s5-row-name">SQL + FTS5</div>
+            <div class="s5-row-desc">Tenders, vendors, ministries. BM25 search.</div>
+          </div>
+        </div>
+        <div class="s5-row reveal d4">
+          <div class="s5-row-label">VECTORIZE</div>
+          <div>
+            <div class="s5-row-name">Dense Retrieval</div>
+            <div class="s5-row-desc">bge-m3 multilingual embeddings, 1024-dim.</div>
+          </div>
+        </div>
+        <div class="s5-row alt reveal d5">
+          <div class="s5-row-label">WORKERS AI</div>
+          <div>
+            <div class="s5-row-name">Edge LLM</div>
+            <div class="s5-row-desc">Llama 3.1 8B · DeepSeek R1 · OpenAI fallback.</div>
+          </div>
+        </div>
+        <div class="s5-row reveal d6">
+          <div class="s5-row-label">NEO4J</div>
+          <div>
+            <div class="s5-row-name">Graph Database</div>
+            <div class="s5-row-desc">Vendor directors, shared NIDs, collusion edges.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="foot-rule"></div>
+    <div class="foot">
+      <div><span class="stack">▢</span> 04 / 08 · Zero-config · Zero-cold-start · Low cost</div>
+      <div class="page">Stack</div>
+    </div>
+  </section>
+
+  <!-- ===========================================
+       SLIDE 6 — THE WINS
+       =========================================== -->
+  <section class="slide grain">
+    <div class="topbar surface-paper">
+      <div class="brand">GovWatch<span class="dot">.</span></div>
+      <div class="meta">
+        <span>Section 05</span>
+        <span class="dot">·</span>
+        <span>What we've built</span>
+      </div>
+    </div>
+
+    <div class="s6-marquee reveal d1">
+      <h2>It works. Today.</h2>
+      <div class="s6-bn">এটা কাজ করে — আজকেই।</div>
+    </div>
+
+    <div class="s6-kpis">
+      <div class="kpi-card alt reveal d2">
+        <div class="kpi-value">১০K+</div>
+        <div class="kpi-label">▢ Tenders indexable · end-to-end pipeline verified</div>
+      </div>
+      <div class="kpi-card reveal d3">
+        <div class="kpi-value">২.৫σ</div>
+        <div class="kpi-label">▢ Automated anomaly flagging · z-score threshold</div>
+      </div>
+      <div class="kpi-card reveal d4">
+        <div class="kpi-value">১৫/১৫</div>
+        <div class="kpi-label">▢ Integration tests passing · SSE streaming verified</div>
+      </div>
+      <div class="kpi-card alt reveal d5">
+        <div class="kpi-value">BN · EN</div>
+        <div class="kpi-label">▢ Native bilingual Q&A · cross-lingual retrieval</div>
+      </div>
+    </div>
+
+    <div class="foot-rule"></div>
+    <div class="foot">
+      <div><span class="stack">▢</span> 05 / 08 · Zero shots fired · pure execution</div>
+      <div class="page">Wins</div>
+    </div>
+  </section>
+
+  <!-- ===========================================
+       SLIDE 7 — WHY NOW
+       =========================================== -->
+  <section class="slide grain">
+    <div class="topbar surface-paper">
+      <div class="brand">GovWatch<span class="dot">.</span></div>
+      <div class="meta">
+        <span>Section 06</span>
+        <span class="dot">·</span>
+        <span>Why Now</span>
+      </div>
+    </div>
+
+    <div class="s7-grid">
+      <div class="s7-left">
+        <h2 class="reveal d1">The<br/>moment<br/>is now.</h2>
+        <div class="s7-bn reveal d2">এখনই সময়।</div>
+        <div class="s7-quote reveal d3">
+          "Every crore spent by the government is your crore.<br/>
+          You have the right to know where it went."
+        </div>
+      </div>
+
+      <div class="s7-right">
+        <div class="s7-point reveal d2">
+          <h3>০১ · A decade of records, finally readable</h3>
+          <p>All e-GP tenders from 2014 onward are now online. What was unusable is now data.</p>
+          <span class="bn">২০১৪ সাল থেকে সব টেন্ডার অনলাইনে।</span>
+        </div>
+        <div class="s7-point alt reveal d3">
+          <h3>০২ · Bangladesh's Bangla-LLM readiness</h3>
+          <p>bge-m3 + Llama 3.1 8B handle Bangla well enough for production — and the cost curve is falling monthly.</p>
+          <span class="bn">বাংলা ভাষা মডেল এখন বাস্তবসম্মত।</span>
+        </div>
+        <div class="s7-point reveal d4">
+          <h3>০৩ · Civic demand is peaking</h3>
+          <p>Press freedom rankings, IMF conditions, citizen journalism — accountability is no longer optional.</p>
+          <span class="bn">জবাবদিহিতার চাহিদা এখন সর্বোচ্চ।</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="foot-rule"></div>
+    <div class="foot">
+      <div><span class="stack">▢</span> 06 / 08 · The cost of waiting is the cost of trust</div>
+      <div class="page">Why now</div>
+    </div>
+  </section>
+
+  <!-- ===========================================
+       SLIDE 8 — CLOSING / ASK
+       =========================================== -->
+  <section class="slide">
+    <div class="s8-closing">
+      <div class="s8-closing-inner">
+        <h2 class="reveal d1">
+          <span class="orange">Transparency</span><br/>
+          is a right,<br/>
+          not a favor.
+        </h2>
+        <div class="s8-bn-big reveal d3">
+          স্বচ্ছতা অধিকার — অনুগ্রহ নয়।
+        </div>
+        <div class="s8-call reveal d4">
+          We're building <span class="accent">GovWatch</span> — a sovereign, open-source civic intelligence stack
+          for Bangladesh. Built on the edge. Built for journalists, oversight bodies, and
+          every citizen who wants to audit the state.
+        </div>
+        <div class="s8-signoff reveal d5">
+          ▢ GitHub · Open Source · Sovereign Stack · Built in 72 hours
+        </div>
+      </div>
+
+      <div class="s8-stamp reveal d6">
+        <div class="stamp circle">সত্য<br/>প্রকাশ</div>
+      </div>
+
+      <div class="s8-script reveal d7">
+        <span class="script" style="color: var(--orange);">join us.</span>
+      </div>
+    </div>
+
+    <div class="ribbon">
+      Thank you <span class="star">★</span> Questions? <span class="star">★</span> govwatch.bd
+    </div>
+  </section>
+
+</main>
+</div>
+
+<div class="page-counter" id="pageCounter">01 / 08</div>
+
+<script>
+/* ===========================================
+   SLIDE PRESENTATION CONTROLLER
+   =========================================== */
+class SlidePresentation {
+    constructor() {
+        this.slides = document.querySelectorAll('.slide');
+        this.currentSlide = 0;
+        this.stage = document.getElementById('deckStage');
+        this.pageCounter = document.getElementById('pageCounter');
+        this.setupStageScale();
+        this.setupKeyboardNav();
+        this.setupTouchNav();
+        this.setupWheelNav();
+        this.showSlide(0);
+    }
+
+    setupStageScale() {
+        const scale = () => {
+            const factor = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+            const x = (window.innerWidth - 1920 * factor) / 2;
+            const y = (window.innerHeight - 1080 * factor) / 2;
+            this.stage.style.transform = `translate(${x}px, ${y}px) scale(${factor})`;
+        };
+        scale();
+        window.addEventListener('resize', scale);
+    }
+
+    setupKeyboardNav() {
+        document.addEventListener('keydown', (e) => {
+            if (e.target.getAttribute('contenteditable')) return;
+            if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+                e.preventDefault();
+                this.next();
+            } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+                e.preventDefault();
+                this.prev();
+            } else if (e.key === 'Home') {
+                this.showSlide(0);
+            } else if (e.key === 'End') {
+                this.showSlide(this.slides.length - 1);
+            }
+        });
+    }
+
+    setupTouchNav() {
+        let startX = 0;
+        let startY = 0;
+        this.stage.addEventListener('touchstart', (e) => {
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
+        }, { passive: true });
+        this.stage.addEventListener('touchend', (e) => {
+            const dx = e.changedTouches[0].clientX - startX;
+            const dy = e.changedTouches[0].clientY - startY;
+            if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) {
+                if (dx < 0) this.next();
+                else this.prev();
+            }
+        }, { passive: true });
+    }
+
+    setupWheelNav() {
+        let lastWheel = 0;
+        this.stage.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const now = Date.now();
+            if (now - lastWheel < 800) return;
+            lastWheel = now;
+            if (e.deltaY > 0) this.next();
+            else this.prev();
+        }, { passive: false });
+    }
+
+    next() {
+        if (this.currentSlide < this.slides.length - 1) this.showSlide(this.currentSlide + 1);
+    }
+
+    prev() {
+        if (this.currentSlide > 0) this.showSlide(this.currentSlide - 1);
+    }
+
+    showSlide(index) {
+        this.currentSlide = Math.max(0, Math.min(index, this.slides.length - 1));
+        this.slides.forEach((slide, i) => {
+            slide.classList.toggle('active', i === this.currentSlide);
+            slide.classList.toggle('visible', i === this.currentSlide);
+        });
+        if (this.pageCounter) {
+            const n = String(this.currentSlide + 1).padStart(2, '0');
+            this.pageCounter.textContent = `${n} / ${String(this.slides.length).padStart(2, '0')}`;
+        }
+    }
+}
+
+/* ===========================================
+   INLINE EDIT MODE
+   =========================================== */
+class InlineEditor {
+    constructor() {
+        this.isActive = false;
+        this.bindUI();
+    }
+
+    bindUI() {
+        const hotzone = document.querySelector('.edit-hotzone');
+        const toggle = document.getElementById('editToggle');
+        let hideTimeout = null;
+
+        hotzone.addEventListener('mouseenter', () => {
+            clearTimeout(hideTimeout);
+            toggle.classList.add('show');
+        });
+        hotzone.addEventListener('mouseleave', () => {
+            hideTimeout = setTimeout(() => {
+                if (!this.isActive) toggle.classList.remove('show');
+            }, 400);
+        });
+        toggle.addEventListener('mouseenter', () => clearTimeout(hideTimeout));
+        toggle.addEventListener('mouseleave', () => {
+            hideTimeout = setTimeout(() => {
+                if (!this.isActive) toggle.classList.remove('show');
+            }, 400);
+        });
+        toggle.addEventListener('click', () => this.toggle());
+        hotzone.addEventListener('click', () => this.toggle());
+
+        document.addEventListener('keydown', (e) => {
+            if ((e.key === 'e' || e.key === 'E') && !e.target.getAttribute('contenteditable')) {
+                this.toggle();
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 's' && this.isActive) {
+                e.preventDefault();
+                this.save();
+            }
+        });
+    }
+
+    toggle() {
+        this.isActive = !this.isActive;
+        document.body.classList.toggle('edit-mode', this.isActive);
+        document.getElementById('editToggle').classList.toggle('active', this.isActive);
+
+        if (this.isActive) {
+            document.querySelectorAll('.slide.active .reveal, .slide.active h1, .slide.active h2, .slide.active h3, .slide.active p, .slide.active .s1-bn, .slide.active .s2-bn, .slide.active .s7-bn, .slide.active .s7-quote, .slide.active .s6-bn, .slide.active .s8-bn-big, .slide.active .s8-call, .slide.active .s3-query, .slide.active .s3-answer, .slide.active .s5-row-name, .slide.active .s5-row-desc, .slide.active .s2-orphan-body p, .slide.active .s4-pillar p, .slide.active .s4-pillar-list li, .slide.active .s7-point p, .slide.active .s1-sub, .slide.active .s4-pillar-tag, .slide.active .s5-lede, .slide.active .s3-panel-label, .slide.active .kpi-label, .slide.active .s2-orphan-body h3, .slide.active .s2-orphan-body .bn, .slide.active .s7-point .bn, .slide.active .script, .slide.active .s1-h1, .slide.active .s6-marquee h2, .slide.active .s8-closing h2, .slide.active .s8-signoff, .slide.active .ribbon, .slide.active .stamp, .slide.active .s4-pillar h3, .slide.active .s7-point h3, .slide.active .s7-left h2, .slide.active .s5-stack h2').forEach(el => {
+                el.setAttribute('contenteditable', 'true');
+            });
+        } else {
+            document.querySelectorAll('[contenteditable]').forEach(el => {
+                el.removeAttribute('contenteditable');
+            });
+        }
+    }
+
+    save() {
+        const html = document.documentElement.outerHTML;
+        const blob = new Blob([html], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'govwatch-pitch.html';
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+}
+
+const deck = new SlidePresentation();
+const editor = new InlineEditor();
+</script>
+</body>
+</html>
