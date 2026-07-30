@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Style B — People's Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Inter:wght@400;500;700;900&family=Caveat+Brush&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* === BASE === */
+  :root {
+    --paper: #f5ede0;
+    --paper-dark: #e8dcc8;
+    --ink: #0a0a0a;
+    --ink-soft: #2a2a2a;
+    --blue: #1e3a8a;
+    --orange: #f9591f;
+    --red: #d62828;
+    --green: #2d6a4f;
+    --yellow: #f5be0e;
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; overflow: hidden; background: var(--ink); font-family: 'Inter', sans-serif; }
+
+  .deck-viewport { position: fixed; inset: 0; }
+  .deck-stage {
+    position: absolute; left: 0; top: 0;
+    width: 1920px; height: 1080px;
+    transform-origin: 0 0;
+    background: var(--paper);
+    overflow: hidden;
+  }
+  .slide {
+    position: absolute; inset: 0;
+    width: 1920px; height: 1080px;
+    visibility: hidden; opacity: 0; pointer-events: none;
+  }
+  .slide.active, .slide.visible { visibility: visible; opacity: 1; pointer-events: auto; z-index: 1; }
+
+  /* === PAPER TEXTURE === */
+  .paper-noise {
+    position: absolute; inset: 0;
+    background-image:
+      radial-gradient(circle at 20% 30%, rgba(0,0,0,0.04) 0%, transparent 60%),
+      radial-gradient(circle at 80% 70%, rgba(0,0,0,0.06) 0%, transparent 50%);
+    pointer-events: none;
+  }
+
+  /* === HEADER STRIPE === */
+  .top-stripe {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 70px;
+    background: var(--ink);
+    color: var(--paper);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 50px;
+    z-index: 5;
+  }
+  .top-stripe .brand {
+    font-family: 'Alfa Slab One';
+    font-size: 22px;
+    letter-spacing: 0.02em;
+  }
+  .top-stripe .brand span { color: var(--orange); }
+  .top-stripe .tag {
+    font-family: 'Inter'; font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+  .top-stripe .tag .dot { color: var(--orange); }
+
+  /* === LEFT BLOCK === */
+  .left-block {
+    position: absolute;
+    top: 130px; left: 60px;
+    width: 880px;
+  }
+
+  .stamp {
+    display: inline-block;
+    background: var(--red);
+    color: var(--paper);
+    padding: 10px 22px;
+    font-family: 'Inter'; font-weight: 900;
+    font-size: 14px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    transform: rotate(-2deg);
+    margin-bottom: 28px;
+    box-shadow: 4px 4px 0 var(--ink);
+  }
+
+  h1 {
+    font-family: 'Alfa Slab One';
+    font-size: 220px;
+    line-height: 0.85;
+    color: var(--ink);
+    margin: 0 0 20px;
+    letter-spacing: -0.02em;
+  }
+  h1 .strike {
+    position: relative;
+    display: inline-block;
+    color: var(--ink);
+  }
+  h1 .strike::after {
+    content: '';
+    position: absolute;
+    left: -8px; right: -8px;
+    top: 50%;
+    height: 18px;
+    background: var(--orange);
+    transform: translateY(-50%) rotate(-1deg);
+    z-index: -1;
+  }
+  h1 .sprite {
+    font-family: 'Alfa Slab One';
+    color: var(--blue);
+    font-size: 100px;
+    display: block;
+    line-height: 0.9;
+    margin-top: 8px;
+  }
+  h1 .bn {
+    font-family: 'Hind Siliguri';
+    font-weight: 700;
+    font-size: 60px;
+    color: var(--ink-soft);
+    display: block;
+    margin-top: 24px;
+    line-height: 1.1;
+  }
+
+  .sub {
+    font-family: 'Inter'; font-weight: 500;
+    font-size: 24px;
+    color: var(--ink-soft);
+    line-height: 1.4;
+    max-width: 720px;
+    margin: 32px 0 0;
+  }
+
+  /* === HANDWRITTEN TAG === */
+  .handwritten {
+    position: absolute;
+    top: 920px; left: 80px;
+    font-family: 'Caveat Brush';
+    font-size: 52px;
+    color: var(--red);
+    transform: rotate(-4deg);
+  }
+  .handwritten::before {
+    content: '— ';
+    color: var(--ink);
+  }
+
+  /* === RIGHT BLOCK === */
+  .right-block {
+    position: absolute;
+    top: 130px; right: 60px;
+    width: 740px;
+    display: flex; flex-direction: column;
+    gap: 28px;
+  }
+
+  .card {
+    background: var(--paper);
+    border: 4px solid var(--ink);
+    box-shadow: 10px 10px 0 var(--ink);
+    padding: 32px;
+    position: relative;
+  }
+  .card-label {
+    font-family: 'Inter'; font-weight: 900;
+    font-size: 12px;
+    color: var(--paper);
+    background: var(--ink);
+    padding: 6px 14px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    position: absolute;
+    top: -22px; left: 24px;
+  }
+  .card-1 { background: var(--orange); transform: rotate(1.5deg); }
+  .card-1 .card-label { background: var(--ink); }
+  .card-2 { background: var(--paper); }
+  .card-2 .card-label { background: var(--blue); }
+  .card-3 { background: var(--yellow); transform: rotate(-1deg); }
+  .card-3 .card-label { background: var(--red); }
+
+  .card-title {
+    font-family: 'Alfa Slab One';
+    font-size: 32px;
+    color: var(--ink);
+    margin: 0 0 12px;
+    line-height: 1.05;
+  }
+  .card-text {
+    font-family: 'Inter'; font-weight: 500;
+    font-size: 16px;
+    color: var(--ink);
+    line-height: 1.45;
+    margin: 0;
+  }
+  .card-text .bn {
+    font-family: 'Hind Siliguri';
+    font-weight: 600;
+  }
+  .card-text .hl { background: var(--ink); color: var(--paper); padding: 0 6px; }
+
+  .card-flag {
+    position: absolute;
+    top: -14px; right: 24px;
+    background: var(--red);
+    color: var(--paper);
+    font-family: 'Inter'; font-weight: 900;
+    font-size: 12px;
+    padding: 6px 12px;
+    border: 3px solid var(--ink);
+    transform: rotate(3deg);
+  }
+
+  /* === BOTTOM BAR === */
+  .bottom-bar {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 60px;
+    background: var(--ink);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 50px;
+    color: var(--paper);
+    font-family: 'Inter'; font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+  .bottom-bar .stack { color: var(--orange); }
+
+  /* === ENTRANCE === */
+  .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    animation: revealUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  @keyframes revealUp { to { opacity: 1; transform: translateY(0); } }
+  .r1 { animation-delay: 0.1s; }
+  .r2 { animation-delay: 0.3s; }
+  .r3 { animation-delay: 0.5s; }
+  .r4 { animation-delay: 0.7s; }
+  .r5 { animation-delay: 0.9s; }
+  .r6 { animation-delay: 1.1s; }
+  .r7 { animation-delay: 1.3s; }
+</style>
+</head>
+<body>
+<div class="deck-viewport">
+<div class="deck-stage">
+  <div class="slide active visible">
+    <div class="paper-noise"></div>
+
+    <div class="top-stripe reveal r1">
+      <div class="brand">GovWatch<span>.</span></div>
+      <div class="tag">Hackathon Demo <span class="dot">·</span> 2026 <span class="dot">·</span> Civic Intelligence</div>
+    </div>
+
+    <div class="left-block">
+      <div class="stamp reveal r2">⚠ Government money. Public records.</div>
+      <h1 class="reveal r3">
+        <span class="strike">Who bought</span>
+        <span class="sprite">your tax<br/>taka?</span>
+        <span class="bn">কে নিচ্ছে<br/>আপনার টাকা?</span>
+      </h1>
+      <p class="sub reveal r4">
+        A bilingual AI that reads ১০ years of Bangladesh tenders, gazettes, and vendor records —
+        and answers in plain Bangla or English with citations, price red flags, and collusion graphs.
+      </p>
+    </div>
+
+    <div class="right-block">
+      <div class="card card-1 reveal r5">
+        <div class="card-label">01 · Ask</div>
+        <div class="card-flag">⚠ +310%</div>
+        <div class="card-title">"কোন ঠিকাদার হবিগঞ্জে সবচেয়ে বেশি টেন্ডার পেয়েছে?"</div>
+        <p class="card-text">
+          GovWatch <span class="hl">retrieves real tenders</span>, ranks them by relevance,
+          flags the <span class="hl">+310% price outliers</span>, and writes a short Bangla answer
+          with source citations.
+        </p>
+      </div>
+
+      <div class="card card-2 reveal r6">
+        <div class="card-label">02 · Verify</div>
+        <div class="card-title">Side-by-side PDF receipts.</div>
+        <p class="card-text">
+          Every claim is anchored to a <span class="hl">PDF page in the original gazette</span>.
+          Click any [Source 1] — the raw scanned document opens with the cited paragraph
+          highlighted in yellow.
+        </p>
+      </div>
+
+      <div class="card card-3 reveal r7">
+        <div class="card-label">03 · Expose</div>
+        <div class="card-title">Vendor collusion graphs.</div>
+        <p class="card-text">
+          Auto-detects <span class="hl">dummy companies sharing directors or NIDs</span>.
+          Renders the network so journalists can follow the money across bidders.
+        </p>
+      </div>
+    </div>
+
+    <div class="handwritten reveal r7">audit the state, citizen.</div>
+
+    <div class="bottom-bar">
+      <div><span class="stack">⬢</span> Cloudflare Edge · D1 · Vectorize · R2</div>
+      <div>01 / 08</div>
+    </div>
+  </div>
+</div>
+</div>
+</body>
+</html>
