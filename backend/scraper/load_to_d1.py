@@ -112,12 +112,35 @@ def main():
     parser.add_argument("--use-sqlite-validate", action="store_true",
                         help="Validate the SQL by running it through an in-memory SQLite "
                              "instance first (catches escaping bugs before you ship).")
+    parser.add_argument("--anomaly-overrides",
+                        default="data/anomaly_overrides.ndjson",
+                        help="Optional NDJSON of computed anomaly fields "
+                             "(produced by the scraper's AnomalyPreComputePipeline).")
     args = parser.parse_args()
 
     with open(args.ndjson, "r", encoding="utf-8") as f:
         items = [json.loads(line) for line in f if line.strip()]
 
     print(f"[d1-load] {len(items)} contracts to load")
+
+    # Merge anomaly overrides (median_bdt, price_z_score, is_price_outlier)
+    # produced by the scraper's AnomalyPreComputePipeline.
+    merged = 0
+    if args.anomaly_overrides and os.path.exists(args.anomaly_overrides):
+        overrides = {}
+        with open(args.anomaly_overrides, "r", encoding="utf-8") as f:
+            for line in f:
+                if line.strip():
+                    o = json.loads(line)
+                    if o.get("tender_id"):
+                        overrides[o["tender_id"]] = o
+        for item in items:
+            tid = item.get("tender_id")
+            if tid in overrides:
+                for k in ("median_bdt", "price_z_score", "is_price_outlier"):
+                    item[k] = overrides[tid].get(k)
+                merged += 1
+        print(f"[d1-load] Merged anomaly overrides for {merged} contracts")
 
     if args.use_sqlite_validate:
         # Round-trip through SQLite to catch syntax/escape errors.

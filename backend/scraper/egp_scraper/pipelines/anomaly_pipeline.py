@@ -62,13 +62,17 @@ def _simplify_package_name(name: str) -> str:
 
 
 class AnomalyPreComputePipeline:
-    """Buffer items, compute z-scores at close_spider."""
+    """Buffer items, compute z-scores at close_spider, then write them
+    back to a sidecar JSON file keyed by tender_id. Items flowing
+    through the pipeline (JsonExportPipeline, CollusionExportPipeline)
+    see the original item without anomaly fields — load_to_d1.py then
+    merges the sidecar file back when generating D1 SQL."""
 
     def __init__(self):
         self.items_buffer = []
 
     def process_item(self, item, spider):
-        # Buffer; don't mutate yet.
+        # Buffer a copy for later batch analysis.
         self.items_buffer.append(dict(item))
         return item
 
@@ -116,3 +120,24 @@ class AnomalyPreComputePipeline:
             f"[anomaly] Grouped {len(self.items_buffer)} contracts into "
             f"{len(groups)} buckets; flagged {len(outliers)} as price outliers"
         )
+
+        # Persist computed anomaly fields to a sidecar file so
+        # load_to_d1.py can merge them back when generating D1 SQL.
+        import json
+        import os
+        try:
+            os.makedirs("data", exist_ok=True)
+            with open("data/anomaly_overrides.ndjson", "w", encoding="utf-8") as f:
+                for it in self.items_buffer:
+                    f.write(json.dumps({
+                        "tender_id": it.get("tender_id"),
+                        "median_bdt": it.get("median_bdt"),
+                        "price_z_score": it.get("price_z_score"),
+                        "is_price_outlier": it.get("is_price_outlier"),
+                    }, ensure_ascii=False) + "\n")
+            spider.logger.info(
+                f"[anomaly] Wrote {len(self.items_buffer)} anomaly overrides "
+                f"to data/anomaly_overrides.ndjson"
+            )
+        except Exception as e:
+            spider.logger.warning(f"[anomaly] Could not write overrides: {e}")

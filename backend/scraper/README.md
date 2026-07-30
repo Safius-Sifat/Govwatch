@@ -34,13 +34,13 @@ it's what makes vendor-collusion detection possible later.
 ```
 egp_contracts spider
        │
-       ├─► GET AdvSearchNOA.jsp (warm session)
+       ├─► GET AdvSearchNOA.jsp (warm session — JSESSIONID cookie)
        │
-       ├─► POST AdvSearchNOA.jsp (pageNo=1, size=500)
+       ├─► POST SearchNoaServlet (keyword=&pageNo=1&size=500)
        │     │
        │     └─► parse rows → enqueue detail requests
        │           │
-       │           └─► POST AdvSearchNOA.jsp (pageNo=2, size=500)
+       │           └─► POST SearchNoaServlet (keyword=&pageNo=2&size=500)
        │                 └─► ... (up to max_pages)
        │
        └─► For each detail URL:
@@ -54,10 +54,15 @@ egp_contracts spider
        ┌──── Pipelines ────┐
        │  100: Dedup       │ ← drop duplicate tender_ids
        │  200: search_text │ ← build embeddable text
-       │  300: anomaly     │ ← pre-compute z-scores
-       │  900: json export │ ← contracts.ndjson
+       │  300: anomaly     │ ← buffer items, write data/anomaly_overrides.ndjson
+       │  900: json export │ ← contracts_<ts>.ndjson
        │  910: collusion   │ ← vendor_directors.ndjson
        └───────────────────┘
+                                  │
+                                  ▼
+                       load_to_d1.py reads both NDJSON files
+                       and merges anomaly fields when emitting
+                       d1_load.sql → Cloudflare D1
 ```
 
 ## Quick start
@@ -160,24 +165,50 @@ backend/scraper/
 
 ## Important caveats
 
-1. **e-GP rate-limits aggressively.** The 1.5s `DOWNLOAD_DELAY` in
+1. **Requires Scrapy 2.13 or later.** Scrapy 2.13 changed the spider
+   entry-point from the synchronous `start_requests()` to an async
+   `start()` method. This scraper defines both: `start()` is an async
+   generator that forwards to `start_requests()`. On Scrapy < 2.13
+   only `start_requests()` is called; on Scrapy 2.13+ only `start()`
+   is invoked. Pin in `requirements.txt`:
+   ```
+   scrapy>=2.13,<3.0
+   ```
+
+2. **Listing endpoint is the AJAX servlet, not the JSP.** The portal's
+   `AdvSearchNOA.jsp` is the search form; the actual paginated rows
+   are returned by `POST /SearchNoaServlet` with body
+   `keyword=&pageNo=<n>&size=<n>`. The spider hits the servlet
+   directly. The JSP page is only fetched once (the warmup GET) to
+   establish the `JSESSIONID` cookie.
+
+3. **e-GP rate-limits aggressively.** The 1.5s `DOWNLOAD_DELAY` in
    `settings.py` is tuned to stay under their threshold. If you get
    429s, bump it to 3s.
 
-2. **Session cookies matter.** The spider warms the ASP.NET session
-   with a GET before the first POST. Don't skip this — without it,
-   ~90% of POSTs fail.
+4. **Session cookies matter.** The spider warms the session with a
+   GET before the first POST. Don't skip this — without it, ~90% of
+   POSTs fail.
 
-3. **Beneficial ownership is the gold.** The `viewShareholdersTable`
+5. **Beneficial ownership is the gold.** The `viewShareholdersTable`
    row exposes vendor directors with their ownership %. Cross-referencing
    these across multiple contracts is how you'll detect dummy companies
    bidding on the same tenders.
 
-4. **Anomaly grouping is naive in v1.** We group by
+6. **Anomaly pipeline writes a sidecar file.** Because z-scores are
+   computed at `close_spider` (after all items have been buffered),
+   the computed `median_bdt`, `price_z_score`, and `is_price_outlier`
+   fields are written to `data/anomaly_overrides.ndjson` rather than
+   being mutated on the original items. The D1 loader (`load_to_d1.py`)
+   automatically merges this sidecar back when generating SQL. You
+   almost never need to touch this — just know that the fields exist
+   in the SQL but not in the raw NDJSON.
+
+7. **Anomaly grouping is naive in v1.** We group by
    `(procurement-method-bucket, simplified-package-category)`. Good
    enough for the demo. For production, you'd want a proper NLP-based
    item taxonomy.
 
-5. **LTM contracts dominate.** Most e-GP contracts are LTM (Limited
+8. **LTM contracts dominate.** Most e-GP contracts are LTM (Limited
    Tender Method) with values under 5 lakh BDT. To find big-ticket
    anomalies, filter for `OTM` and above.
