@@ -1,0 +1,6 @@
+scrapy>=2.11
+requests>=2.31
+beautifulsoup4>=4.12
+lxml>=4.9
+# For the D1 loader and embedding step:
+python-dotenv>=1.0
