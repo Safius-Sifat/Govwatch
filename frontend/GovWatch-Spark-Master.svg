@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" id="svg-studio-master" viewBox="0 0 480 220" width="480" height="220">
+  <defs>
+    <linearGradient id="grad-master-flame" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10B981"/>
+      <stop offset="50%" stop-color="#34D399"/>
+      <stop offset="100%" stop-color="#FBBF24"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(20, 15)">
+    <!-- Fiery Mark Master -->
+    <path d="M55 4 L90 40 C112 75 100 112 55 128 C10 112 -2 75 20 40 Z" fill="url(#grad-master-flame)"/>
+    <path d="M61 24 L33 62 L52 62 L45 102 L76 57 L57 57 Z" fill="#090D16"/>
+    <circle cx="55" cy="60" r="5.5" fill="#FBBF24"/>
+  </g>
+
+  <!-- Typography Lockup -->
+  <text x="160" y="80" fill="#0F172A" font-family="Inter, system-ui, sans-serif" font-weight="900" font-size="42" letter-spacing="-1">GovWatch</text>
+  <text x="162" y="125" fill="#10B981" font-family="'Hind Siliguri', system-ui, sans-serif" font-weight="800" font-size="34">গভওয়াচ</text>
+  <text x="164" y="155" fill="#64748B" font-family="Inter, system-ui, sans-serif" font-weight="800" font-size="12" letter-spacing="4">CIVIC WATCHDOG</text>
+</svg>

@@ -27,6 +27,8 @@ pnpm-debug.log*
 .env.local
 .env.*.local
 .env.production
+*.jpeg
+*.png
 
 # ============================================================
 # Build artifacts

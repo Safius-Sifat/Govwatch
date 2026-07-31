@@ -104,6 +104,92 @@ img, video, canvas, svg { max-width: 100%; max-height: 100%; }
 }
 
 /* ===========================================
+   PRINT — one 16:9 slide per A4/Letter page
+   ===========================================
+   The viewport wrapper and the JS-applied stage
+   transform both assume a live browser window.
+   When you hit ⌘P / Ctrl+P we strip them off,
+   stack every slide on the page in flow, and
+   force a page-break between each slide so the
+   resulting PDF is a clean 16:9 deck.
+   - Chrome / Safari: pick "Save as PDF" and
+     set paper size to Landscape, no margins.
+   - The default `body` font + colors are kept
+     so the paper-cream background prints correctly. */
+@media print {
+    /* Slides are authored at 1920×1080 px.
+       At 96 dpi that's 508mm × 285.75mm.
+       Match the page to those exact dimensions
+       so each slide prints at native size on a
+       single 16:9 page. */
+    @page {
+        size: 508mm 285.75mm;
+        margin: 0;
+    }
+
+    html, body {
+        width: 508mm;
+        height: 285.75mm;
+        margin: 0;
+        padding: 0;
+        overflow: visible !important;
+        background: #ffffff !important;
+    }
+
+    .deck-viewport {
+        position: static !important;
+        overflow: visible !important;
+        background: #ffffff !important;
+    }
+
+    .deck-stage {
+        position: static !important;
+        width: auto !important;
+        height: auto !important;
+        transform: none !important;
+        background: #ffffff !important;
+    }
+
+    /* Reveal all slides at their native
+       1920×1080 authoring size. One slide per
+       page; page-break forces the next slide
+       onto the next sheet. */
+    .slide {
+        position: relative !important;
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+        width: 1920px !important;
+        height: 1080px !important;
+        overflow: hidden !important;
+        page-break-after: always;
+        break-after: page;
+    }
+    .slide:last-child {
+        page-break-after: auto;
+        break-after: auto;
+    }
+
+    .deck-controls,
+    .page-counter {
+        display: none !important;
+    }
+
+    /* Reveal animations default to opacity:0
+       and only animate in when the slide is
+       marked `.visible` on screen. Print never
+       marks anything `.visible`, so we force
+       every `.reveal` element to its final
+       state in print. */
+    .reveal,
+    .slide .reveal {
+        opacity: 1 !important;
+        transform: none !important;
+    }
+}
+
+/* ===========================================
    GRAIN OVERLAY (every slide)
    =========================================== */
 .grain::before {
@@ -937,7 +1023,425 @@ img, video, canvas, svg { max-width: 100%; max-height: 100%; }
 }
 .s7-point.alt .bn { color: var(--cream); opacity: 0.85; }
 
-/* ----- SLIDE 8: CLOSING / ASK ----- */
+/* ----- SLIDE 5 (NEW): LEVEL-1 DATA-FLOW DIAGRAM ----- */
+/* Drawn in the People's Platform vocabulary: paper cards, ink lines,
+   stacked shadows, hand-drawn arrows via dashed borders. No SVG. */
+.dfd {
+    position: absolute;
+    top: 150px; left: 80px; right: 80px;
+    bottom: 150px;
+    display: grid;
+    grid-template-columns: 220px 1fr 220px;
+    gap: 28px;
+    align-items: stretch;
+}
+.dfd-col {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    justify-content: center;
+}
+.dfd-col-label {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 8px;
+    margin-bottom: 4px;
+}
+.dfd-source {
+    background: var(--cream);
+    border: 2px solid var(--ink);
+    padding: 14px 18px;
+    box-shadow: 6px 6px 0 var(--ink);
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 18px;
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.dfd-source .icon {
+    width: 32px; height: 32px;
+    background: var(--ink);
+    color: var(--cream);
+    font-family: var(--font-display);
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.dfd-source .meta {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--ink-soft);
+    letter-spacing: 0.05em;
+    margin-top: 2px;
+}
+
+.dfd-process {
+    position: relative;
+    background: var(--paper);
+    border: 3px solid var(--ink);
+    padding: 28px 32px;
+    box-shadow: 10px 10px 0 var(--orange);
+    text-align: center;
+}
+.dfd-process h3 {
+    font-family: var(--font-display);
+    font-size: 38px;
+    margin: 0 0 8px;
+    color: var(--ink);
+    line-height: 1;
+}
+.dfd-process .tag {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--orange-deep);
+    margin-bottom: 16px;
+}
+.dfd-process .sub {
+    font-family: var(--font-body);
+    font-size: 16px;
+    color: var(--ink-soft);
+    line-height: 1.4;
+    max-width: 320px;
+    margin: 0 auto;
+}
+.dfd-process .bn {
+    font-family: var(--font-bn);
+    font-size: 18px;
+    color: var(--ink);
+    margin-top: 10px;
+    display: block;
+}
+
+/* In/out flow arrows on the process box */
+.dfd-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink);
+    background: var(--paper);
+    padding: 4px 8px;
+    border: 1.5px solid var(--ink);
+}
+.dfd-arrow.in  { left: -22px; }
+.dfd-arrow.out { right: -22px; }
+
+.dfd-store {
+    background: var(--ink);
+    color: var(--cream);
+    border: 2px solid var(--ink);
+    padding: 14px 18px;
+    box-shadow: 6px 6px 0 var(--blue);
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.dfd-store .icon {
+    width: 28px; height: 28px;
+    background: var(--orange);
+    color: var(--ink);
+    font-family: var(--font-display);
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.dfd-store .label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--cream);
+    opacity: 0.7;
+    letter-spacing: 0.05em;
+}
+
+/* Cross-flow dashed connectors across the diagram */
+.dfd-connectors {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+.dfd-connectors .line {
+    position: absolute;
+    border-top: 2px dashed var(--ink);
+    height: 0;
+}
+.dfd-connectors .lab {
+    position: absolute;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-soft);
+    background: var(--paper);
+    padding: 2px 6px;
+    letter-spacing: 0.05em;
+}
+
+/* ----- SLIDE 7 (NEW): TECHNICAL FLOW (chat request lifecycle) ----- */
+.tflow {
+    position: absolute;
+    top: 165px; left: 80px; right: 80px;
+    bottom: 175px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+.tflow-stage {
+    display: grid;
+    grid-template-columns: 90px 1fr 110px;
+    gap: 24px;
+    align-items: center;
+    background: var(--cream);
+    border: 2px solid var(--ink);
+    padding: 16px 22px;
+    box-shadow: 5px 5px 0 var(--ink);
+    position: relative;
+}
+.tflow-stage.alt {
+    background: var(--ink);
+    color: var(--cream);
+    box-shadow: 5px 5px 0 var(--orange);
+}
+.tflow-stage .num {
+    font-family: var(--font-display);
+    font-size: 44px;
+    line-height: 1;
+    color: var(--orange);
+    text-align: center;
+}
+.tflow-stage.alt .num { color: var(--orange); }
+.tflow-stage .body h4 {
+    font-family: var(--font-display);
+    font-size: 22px;
+    margin: 0 0 4px;
+    line-height: 1.1;
+    color: var(--ink);
+}
+.tflow-stage.alt .body h4 { color: var(--cream); }
+.tflow-stage .body p {
+    font-family: var(--font-body);
+    font-size: 15px;
+    margin: 0;
+    line-height: 1.35;
+    color: var(--ink-soft);
+}
+.tflow-stage.alt .body p { color: var(--cream); opacity: 0.85; }
+.tflow-stage .body code {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    background: var(--paper);
+    border: 1px solid var(--ink);
+    padding: 1px 5px;
+    color: var(--ink);
+}
+.tflow-stage.alt .body code {
+    background: var(--ink-soft);
+    border-color: var(--cream);
+    color: var(--cream);
+}
+.tflow-stage .latency {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 500;
+    text-align: right;
+    color: var(--red);
+    letter-spacing: 0.02em;
+}
+.tflow-stage.alt .latency { color: var(--orange); }
+.tflow-stage .latency small {
+    display: block;
+    font-size: 10px;
+    font-weight: 400;
+    color: var(--ink-soft);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+.tflow-stage.alt .latency small { color: var(--cream); opacity: 0.6; }
+
+.tflow-arrow {
+    text-align: center;
+    font-family: var(--font-display);
+    font-size: 28px;
+    color: var(--orange);
+    line-height: 0.4;
+    height: 14px;
+}
+
+/* ----- SLIDE 10: THE TEAM ----- */
+.team {
+    position: absolute;
+    top: 150px; left: 80px; right: 80px;
+    bottom: 150px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+.team-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+}
+.team-head h2 {
+    font-family: var(--font-display);
+    font-size: 72px;
+    margin: 0;
+    color: var(--ink);
+    line-height: 0.95;
+}
+.team-head h2 .orange { color: var(--orange); text-shadow: 5px 5px 0 var(--red); }
+.team-head .bn {
+    font-family: var(--font-bn);
+    font-size: 28px;
+    color: var(--ink-soft);
+}
+.team-head .live {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--ink-soft);
+    letter-spacing: 0.1em;
+}
+.team-head .live .dot {
+    color: var(--red);
+    animation: pulse 1.6s ease-in-out infinite;
+}
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+.team-row {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 28px;
+    align-items: center;
+    background: var(--cream);
+    border: 3px solid var(--ink);
+    padding: 22px 28px;
+    box-shadow: 8px 8px 0 var(--ink);
+}
+.team-row.alt {
+    background: var(--ink);
+    color: var(--cream);
+    box-shadow: 8px 8px 0 var(--blue);
+}
+.team-photo {
+    width: 200px;
+    height: 200px;
+    border: 3px solid var(--ink);
+    overflow: hidden;
+    background: var(--paper);
+    position: relative;
+}
+.team-row.alt .team-photo { border-color: var(--cream); }
+.team-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+.team-info h3 {
+    font-family: var(--font-display);
+    font-size: 36px;
+    margin: 0 0 6px;
+    line-height: 1;
+}
+.team-row.alt .team-info h3 { color: var(--cream); }
+.team-info .role {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--orange-deep);
+    margin-bottom: 12px;
+}
+.team-row.alt .team-info .role { color: var(--orange); }
+.team-info .contrib {
+    font-family: var(--font-body);
+    font-size: 17px;
+    line-height: 1.45;
+    color: var(--ink-soft);
+}
+.team-row.alt .team-info .contrib { color: var(--cream); opacity: 0.9; }
+.team-info .stack {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 12px;
+}
+.team-info .stack span {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border: 1.5px solid var(--ink);
+    background: var(--paper);
+    color: var(--ink);
+    padding: 3px 8px;
+}
+.team-row.alt .team-info .stack span {
+    border-color: var(--cream);
+    background: var(--ink-soft);
+    color: var(--cream);
+}
+
+.team-photo {
+    display: block;
+    text-decoration: none;
+    cursor: pointer;
+}
+.team-photo:hover {
+    outline: 3px solid var(--orange);
+    outline-offset: 2px;
+}
+
+.team-info h3 .arrow {
+    display: inline-block;
+    margin-left: 6px;
+    font-family: var(--font-display);
+    font-size: 28px;
+    color: var(--red);
+    text-shadow: 2px 2px 0 var(--ink);
+}
+.team-row.alt .team-info h3 .arrow {
+    color: var(--orange);
+    text-shadow: 2px 2px 0 var(--blue);
+}
+
+.team-cta {
+    margin-top: auto;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 18px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink);
+    padding: 14px 0 4px;
+}
+.team-cta a {
+    color: var(--red);
+    text-decoration: none;
+    border-bottom: 2px solid var(--red);
+    padding-bottom: 2px;
+}
+.team-cta a:hover {
+    color: var(--orange);
+    border-bottom-color: var(--orange);
+}
+
+/* ----- SLIDE 11: CLOSING / ASK ----- */
 .s8-closing {
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
@@ -1308,7 +1812,104 @@ img, video, canvas, svg { max-width: 100%; max-height: 100%; }
     <div class="foot-rule"></div>
     <div class="foot">
       <div><span class="stack">▢</span> Edge-native · Cloudflare Workers AI · LangGraph orchestration</div>
-      <div class="page">03 / 08 · Architecture</div>
+      <div class="page">03 / 10 · Architecture</div>
+    </div>
+  </section>
+
+  <!-- ===========================================
+       SLIDE 4B — LEVEL-1 DATA-FLOW DIAGRAM
+       =========================================== -->
+  <section class="slide grain">
+    <div class="topbar surface-paper">
+      <div class="brand">GovWatch<span class="dot">.</span></div>
+      <div class="meta">
+        <span>Section 04</span>
+        <span class="dot">·</span>
+        <span>Level-1 DFD</span>
+      </div>
+    </div>
+
+    <h2 class="reveal d1" style="position: absolute; top: 95px; left: 80px; font-family: var(--font-display); font-size: 72px; line-height: 0.95; margin: 0; color: var(--ink);">
+      Data <span style="color: var(--orange); text-shadow: 4px 4px 0 var(--red);">flows.</span><br/>
+      <span style="font-family: var(--font-bn); font-size: 32px; color: var(--ink-soft);">ডেটা প্রবাহ।</span>
+    </h2>
+
+    <div class="dfd">
+      <!-- LEFT — EXTERNAL ENTITIES (sources) -->
+      <div class="dfd-col">
+        <div class="dfd-col-label">EXTERNAL SOURCES ›</div>
+        <div class="dfd-source reveal d2">
+          <div class="icon">e</div>
+          <div>
+            e-GP Tenders
+            <div class="meta">~1,000 req/min · ASP.NET</div>
+          </div>
+        </div>
+        <div class="dfd-source reveal d3">
+          <div class="icon">BG</div>
+          <div>
+            Bangladesh Gazette
+            <div class="meta">PDFs · 2014 → present</div>
+          </div>
+        </div>
+        <div class="dfd-source reveal d4">
+          <div class="icon">M</div>
+          <div>
+            Ministry Websites
+            <div class="meta">DPHE, LGD, RHD</div>
+          </div>
+        </div>
+        <div class="dfd-source reveal d5">
+          <div class="icon">VR</div>
+          <div>
+            Vendor Registry
+            <div class="meta">RJSC · NID cross-ref</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CENTER — PROCESS -->
+      <div style="display: flex; align-items: center; justify-content: center;">
+        <div class="dfd-process reveal d2">
+          <div class="tag">▢ Process 0 · GovWatch Core</div>
+          <h3>GovWatch</h3>
+          <div class="sub">Crawl → OCR → Embed → Retrieve → Re-rank → Cite → Anomaly-flag</div>
+          <span class="bn">ক্রল থেকে সতর্কতা পর্যন্ত — একটি পাইপলাইন।</span>
+          <div class="dfd-arrow in">RAW DATA</div>
+          <div class="dfd-arrow out">CITED ANSWERS</div>
+        </div>
+      </div>
+
+      <!-- RIGHT — DATA STORES / CONSUMERS -->
+      <div class="dfd-col">
+        <div class="dfd-col-label">‹ STORES · CONSUMERS</div>
+        <div class="dfd-store reveal d3">
+          <div class="icon">D1</div>
+          <span>Workers D1</span>
+          <div class="label">Structured metadata · FTS5</div>
+        </div>
+        <div class="dfd-store reveal d4">
+          <div class="icon">R2</div>
+          <span>R2 Object Store</span>
+          <div class="label">PDFs · gazettes · caches</div>
+        </div>
+        <div class="dfd-store reveal d5">
+          <div class="icon">↗</div>
+          <span>Vectorize</span>
+          <div class="label">1,024-dim · bge-m3</div>
+        </div>
+        <div class="dfd-store reveal d6">
+          <div class="icon">⊕</div>
+          <span>Neo4j Vendor Graph</span>
+          <div class="label">Shared NID · collusion</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="foot-rule"></div>
+    <div class="foot">
+      <div><span class="stack">▢</span> 04 / 10 · Your-G to Your-G · every byte auditable</div>
+      <div class="page">Data Flow</div>
     </div>
   </section>
 
@@ -1319,7 +1920,7 @@ img, video, canvas, svg { max-width: 100%; max-height: 100%; }
     <div class="topbar surface-paper">
       <div class="brand">GovWatch<span class="dot">.</span></div>
       <div class="meta">
-        <span>Section 04</span>
+        <span>Section 05</span>
         <span class="dot">·</span>
         <span>The Stack</span>
       </div>
@@ -1377,7 +1978,7 @@ img, video, canvas, svg { max-width: 100%; max-height: 100%; }
 
     <div class="foot-rule"></div>
     <div class="foot">
-      <div><span class="stack">▢</span> 04 / 08 · Zero-config · Zero-cold-start · Low cost</div>
+      <div><span class="stack">▢</span> 05 / 10 · Zero-config · Zero-cold-start · Low cost</div>
       <div class="page">Stack</div>
     </div>
   </section>
@@ -1389,7 +1990,7 @@ img, video, canvas, svg { max-width: 100%; max-height: 100%; }
     <div class="topbar surface-paper">
       <div class="brand">GovWatch<span class="dot">.</span></div>
       <div class="meta">
-        <span>Section 05</span>
+        <span>Section 06</span>
         <span class="dot">·</span>
         <span>What we've built</span>
       </div>
@@ -1421,19 +2022,103 @@ img, video, canvas, svg { max-width: 100%; max-height: 100%; }
 
     <div class="foot-rule"></div>
     <div class="foot">
-      <div><span class="stack">▢</span> 05 / 08 · Zero shots fired · pure execution</div>
+      <div><span class="stack">▢</span> 06 / 10 · Zero shots fired · pure execution</div>
       <div class="page">Wins</div>
     </div>
   </section>
 
   <!-- ===========================================
-       SLIDE 7 — WHY NOW
+       SLIDE 7 — TECHNICAL FLOW (request lifecycle)
        =========================================== -->
   <section class="slide grain">
     <div class="topbar surface-paper">
       <div class="brand">GovWatch<span class="dot">.</span></div>
       <div class="meta">
-        <span>Section 06</span>
+        <span>Section 07</span>
+        <span class="dot">·</span>
+        <span>Request Lifecycle</span>
+      </div>
+    </div>
+
+    <h2 class="reveal d1" style="position: absolute; top: 95px; left: 80px; font-family: var(--font-display); font-size: 60px; line-height: 0.95; margin: 0; color: var(--ink);">
+      Behind the <span style="color: var(--blue);">answer.</span><br/>
+      <span style="font-family: var(--font-bn); font-size: 28px; color: var(--ink-soft);">উত্তরের পেছনে।</span>
+    </h2>
+    <div class="reveal d1" style="position: absolute; top: 115px; right: 80px; font-family: var(--font-mono); font-size: 13px; color: var(--ink-soft); letter-spacing: 0.1em;">
+      <span style="color: var(--red);">●</span> LIVE STREAM · SSE
+    </div>
+
+    <div class="tflow">
+      <!-- Stage 1: Client → Edge -->
+      <div class="tflow-stage reveal d2">
+        <div class="num">01</div>
+        <div class="body">
+          <h4>Client → Edge Worker</h4>
+          <p><code>POST /api/chat</code> from browser. Worker validates JWT, opens an SSE stream. POST body is streamed through to the orchestrator without buffering the full payload.</p>
+        </div>
+        <div class="latency">~30ms<small>p50 · edge</small></div>
+      </div>
+      <div class="tflow-arrow">↓</div>
+
+      <!-- Stage 2: Orchestrator -->
+      <div class="tflow-stage alt reveal d3">
+        <div class="num">02</div>
+        <div class="body">
+          <h4>LangGraph Orchestrator</h4>
+          <p>Plans the retrieval strategy. Decides whether the query needs vector search, structured D1 lookup, vendor-graph traversal, or all three. Streams the plan back so the UI can render a thinking trace.</p>
+        </div>
+        <div class="latency">~120ms<small>planning</small></div>
+      </div>
+      <div class="tflow-arrow">↓</div>
+
+      <!-- Stage 3: Hybrid retrieval -->
+      <div class="tflow-stage reveal d4">
+        <div class="num">03</div>
+        <div class="body">
+          <h4>Hybrid Retrieval · RRF Fusion</h4>
+          <p>Query embedded with <code>bge-m3</code>. Vectorize returns top-50; D1 FTS5 returns top-50; Neo4j enriches with vendor edges when named entities match. Reciprocal Rank Fusion merges the three lists into 12 candidates.</p>
+        </div>
+        <div class="latency">~180ms<small>parallel</small></div>
+      </div>
+      <div class="tflow-arrow">↓</div>
+
+      <!-- Stage 4: Re-rank -->
+      <div class="tflow-stage alt reveal d5">
+        <div class="num">04</div>
+        <div class="body">
+          <h4>Cross-Encoder Re-rank + Anomaly Pass</h4>
+          <p><code>bge-reranker-v2-m3</code> re-scores the 12 candidates. In parallel, an anomaly pass computes z-score on any returned price figures and flags shared NIDs from the graph for the prompt.</p>
+        </div>
+        <div class="latency">~250ms<small>Workers AI</small></div>
+      </div>
+      <div class="tflow-arrow">↓</div>
+
+      <!-- Stage 5: Generate + Stream -->
+      <div class="tflow-stage reveal d6">
+        <div class="num">05</div>
+        <div class="body">
+          <h4>Cited Answer · Token Stream</h4>
+          <p>Llama 3.1 8B (Workers AI) generates the answer with inline citation markers <code>[1][2][7]</code>. Tokens are pushed to the client via SSE as they're produced. Anomaly badges ride alongside in a parallel channel.</p>
+        </div>
+        <div class="latency">~1.8s<small>first token</small></div>
+      </div>
+    </div>
+
+    <div class="foot-rule"></div>
+    <div class="foot">
+      <div><span class="stack">▢</span> 07 / 10 · ~2.4s end-to-end · every step verifiable in the trace</div>
+      <div class="page">Technical Flow</div>
+    </div>
+  </section>
+
+  <!-- ===========================================
+       SLIDE 9 — WHY NOW
+       =========================================== -->
+  <section class="slide grain">
+    <div class="topbar surface-paper">
+      <div class="brand">GovWatch<span class="dot">.</span></div>
+      <div class="meta">
+        <span>Section 09</span>
         <span class="dot">·</span>
         <span>Why Now</span>
       </div>
@@ -1470,13 +2155,57 @@ img, video, canvas, svg { max-width: 100%; max-height: 100%; }
 
     <div class="foot-rule"></div>
     <div class="foot">
-      <div><span class="stack">▢</span> 06 / 08 · The cost of waiting is the cost of trust</div>
+      <div><span class="stack">▢</span> 09 / 11 · The cost of waiting is the cost of trust</div>
       <div class="page">Why now</div>
     </div>
   </section>
 
   <!-- ===========================================
-       SLIDE 8 — CLOSING / ASK
+       SLIDE 10 — TEAM
+       =========================================== -->
+  <section class="slide team-slide" data-slide="10">
+    <div class="topbar">
+      <span>SECTION 10</span>
+      <span>THE PEOPLE BEHIND THE BYTES</span>
+    </div>
+    <div class="team">
+      <div class="team-head">
+        <h2>Who built this. <span class="orange">কে বানিয়েছে।</span></h2>
+      </div>
+
+      <div class="team-row">
+        <a class="team-photo" href="https://govwatch.xyz" target="_blank" rel="noopener">
+          <img src="safius_sifat.jpeg" alt="Safius Sifat" />
+        </a>
+        <div class="team-info">
+          <h3>Safius Sifat <span class="arrow">→</span></h3>
+          <div class="role">Backend &amp; ML Engineer</div>
+          <div class="contrib">Built the intelligence layer: ingestion, search, document understanding, and the systems that turn public records into answers.</div>
+          <div class="stack"><span>Cloudflare Workers</span><span>D1</span><span>Vectorize</span><span>R2</span><span>Workers AI</span><span>bge-m3</span><span>Neo4j</span></div>
+        </div>
+      </div>
+
+      <div class="team-row alt">
+        <a class="team-photo" href="https://govwatch.xyz" target="_blank" rel="noopener">
+          <img src="jamius-saleh.png" alt="Jamius Saleh" />
+        </a>
+        <div class="team-info">
+          <h3>Jamius Saleh <span class="arrow">→</span></h3>
+          <div class="role">Frontend Engineer</div>
+          <div class="contrib">Designed and shipped the interface: a fast, readable way to explore tenders, evidence, timelines, and government activity.</div>
+          <div class="stack"><span>Next.js 16</span><span>OpenNext</span><span>React 19</span><span>PostHog</span><span>Cloudflare Relay</span><span>Drizzle</span></div>
+        </div>
+      </div>
+
+      <div class="team-cta">
+        Visit us → <a href="https://govwatch.xyz" target="_blank" rel="noopener">govwatch.xyz</a>
+      </div>
+    </div>
+    <div class="footer"><span>10 / 11 · THE PEOPLE BEHIND THE BYTES</span><span>govwatch.xyz</span></div>
+  </section>
+
+  <!-- ===========================================
+       SLIDE 11 — CLOSING / ASK
        =========================================== -->
   <section class="slide">
     <div class="s8-closing">
@@ -1509,14 +2238,14 @@ img, video, canvas, svg { max-width: 100%; max-height: 100%; }
     </div>
 
     <div class="ribbon">
-      Thank you <span class="star">★</span> Questions? <span class="star">★</span> govwatch.bd
+      Thank you <span class="star">★</span> Questions? <span class="star">★</span> govwatch.xyz
     </div>
   </section>
 
 </main>
 </div>
 
-<div class="page-counter" id="pageCounter">01 / 08</div>
+<div class="page-counter" id="pageCounter">01 / 11</div>
 
 <script>
 /* ===========================================

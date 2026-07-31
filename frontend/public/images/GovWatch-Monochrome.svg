@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" id="svg-mono-dark" viewBox="0 0 380 100" class="w-full h-20 max-w-[300px]">
+              <g transform="translate(10, 5)">
+                <path d="M45 4 L75 34 C93 64 83 94 45 108 C7 94 -3 64 15 34 Z" fill="#FFFFFF"/>
+                <path d="M50 20 L27 52 L43 52 L37 86 L63 48 L47 48 Z" fill="#000000"/>
+              </g>
+              <text x="115" y="52" fill="#FFFFFF" font-family="Inter, sans-serif" font-weight="900" font-size="36" letter-spacing="-1">GovWatch</text>
+              <text x="117" y="82" fill="#A1A1AA" font-family="'Hind Siliguri', sans-serif" font-weight="700" font-size="24">গভওয়াচ</text>
+            </svg>
