@@ -59,8 +59,8 @@ WORKERSAI_MODEL = "@cf/meta/llama-3.1-8b-instruct"
 # Cron Triggers (production: 6-hour incremental re-crawl)
 # ============================================================
 
-[triggers]
-crons = ["0 */6 * * *"]
+# [triggers]
+# crons = ["0 */6 * * *"]
 
 # ============================================================
 # Observability
