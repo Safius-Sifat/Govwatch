@@ -9,9 +9,8 @@
  * Worker, returning JSON. This proxy exists so the browser fetch is
  * same-origin (no CORS) and so we can centrally inject headers.
  */
-export const runtime = 'nodejs'
-
-const WORKER_URL = process.env.WORKER_URL ?? 'http://127.0.0.1:8787'
+// Workers runtime — same reason as /api/chat. Dropping nodejs compat.
+import { getWorkerUrl } from '@/lib/govwatch/url'
 
 const ALLOWED: Record<string, boolean> = {
   health: true,
@@ -40,7 +39,7 @@ export async function GET(
     return new Response('Not found', { status: 404 })
   }
 
-  const upstreamUrl = `${WORKER_URL}/api/${path.join('/')}${req.url.includes('?') ? '?' + new URL(req.url).searchParams.toString() : ''}`
+  const upstreamUrl = `${getWorkerUrl()}/api/${path.join('/')}${req.url.includes('?') ? '?' + new URL(req.url).searchParams.toString() : ''}`
 
   try {
     const upstream = await fetch(upstreamUrl, {

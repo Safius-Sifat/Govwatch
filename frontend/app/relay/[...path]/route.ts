@@ -20,7 +20,11 @@ const POSTHOG_HOST =
 const POSTHOG_ASSETS_HOST = 'https://us-assets.i.posthog.com'
 
 export const dynamic = 'force-dynamic'
-export const runtime = 'nodejs'
+
+// Workers runtime. POST uses fetch duplex='half' which is supported
+// on the Workers runtime; the previous nodejs compat runtime was
+// unnecessary and was masking the same upstream-stream error as the
+// /api/chat route.
 
 type Ctx = { params: Promise<{ path: string[] }> }
 

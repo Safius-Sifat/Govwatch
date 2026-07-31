@@ -18,11 +18,18 @@
  * the broader app, but GovWatch's own UI in `components/govwatch/chat`
  * consumes this stream directly via `fetch` + `ReadableStream`.
  */
-export const maxDuration = 300
+// Run on the Cloudflare Workers runtime. Node.js compat (runtime =
+// 'nodejs') breaks fetch-streaming here: Workers streams the upstream
+// SSE body as a ReadableStream<Uint8Array> that the Workers runtime
+// knows how to forward, but Node.js compat wraps it as a Node
+// Readable which Response() can't consume cleanly. The result was a
+// 502 "Worker returned 404: error code 1042" on every /api/chat call.
+//
+// `WORKER_URL` is read via getCloudflareContext() in lib/govwatch/url.ts
+// because on the Workers runtime, vars declared in wrangler.toml are
+// NOT exposed through `process.env` — they live on the request context.
 
-export const runtime = 'nodejs'
-
-const WORKER_URL = process.env.WORKER_URL ?? 'http://127.0.0.1:8787'
+import { getWorkerUrl } from '@/lib/govwatch/url'
 
 /**
  * Extract the user's text query from an AI SDK `message` payload, or
@@ -89,18 +96,37 @@ export async function POST(req: Request) {
   const langMatch = cookieHeader.match(/(?:^|;\s*)govwatch_lang=([^;]+)/)
   const language = langMatch?.[1] === 'en' ? 'en' : 'bn'
 
-  const upstream = await fetch(`${WORKER_URL}/api/search`, {
-    method: 'POST',
-    headers: {
-      'content-type': 'application/json',
-      accept: 'text/event-stream',
-    },
-    body: JSON.stringify({
-      query,
-      language,
-      chatId: typeof body.chatId === 'string' ? body.chatId : undefined,
-    }),
-  })
+  const targetUrl = `${getWorkerUrl()}/api/search`
+  console.log('[govwatch] /api/chat upstream:', targetUrl)
+
+  let upstream: Response
+  try {
+    upstream = await fetch(targetUrl, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        accept: 'text/event-stream',
+      },
+      body: JSON.stringify({
+        query,
+        language,
+        chatId: typeof body.chatId === 'string' ? body.chatId : undefined,
+      }),
+    })
+  } catch (err) {
+    console.error('[govwatch] /api/chat fetch threw:', String(err))
+    return new Response(
+      `Upstream fetch threw: ${String(err)} (target=${targetUrl})`,
+      { status: 502 },
+    )
+  }
+
+  console.log(
+    '[govwatch] /api/chat upstream status:',
+    upstream.status,
+    'hasBody:',
+    Boolean(upstream.body),
+  )
 
   if (!upstream.ok || !upstream.body) {
     return new Response(

@@ -4,9 +4,9 @@
  * Worker exposes GET /api/pdfs/:tenderId. We just forward that request
  * and return the binary stream.
  */
-export const runtime = 'nodejs'
-
-const WORKER_URL = process.env.WORKER_URL ?? 'http://127.0.0.1:8787'
+// Workers runtime — same reason as /api/chat. Dropping nodejs compat
+// so the upstream ReadableStream<Uint8Array> can be forwarded.
+import { getWorkerUrl } from '@/lib/govwatch/url'
 
 export async function GET(
   _req: Request,
@@ -17,7 +17,7 @@ export async function GET(
     return new Response('Invalid tenderId', { status: 400 })
   }
 
-  const upstream = await fetch(`${WORKER_URL}/api/pdfs/${tenderId}`)
+  const upstream = await fetch(`${getWorkerUrl()}/api/pdfs/${tenderId}`)
 
   if (!upstream.ok || !upstream.body) {
     return new Response(`Worker returned ${upstream.status}`, {
