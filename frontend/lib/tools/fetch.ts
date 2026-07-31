@@ -97,8 +97,10 @@ async function fetchJinaReaderData(url: string): Promise<SearchResultsType> {
         'X-With-Generated-Alt': 'true'
       }
     })
-    const json = await response.json()
-    if (!json.data || json.data.length === 0) {
+    const json = (await response.json()) as {
+      data?: { content: string; title: string; url: string }
+    }
+    if (!json.data || !json.data.content) {
       throw new Error('No data returned from Jina Reader API')
     }
 
@@ -131,7 +133,9 @@ async function fetchTavilyExtractData(url: string): Promise<SearchResultsType> {
       },
       body: JSON.stringify({ api_key: apiKey, urls: [url] })
     })
-    const json = await response.json()
+    const json = (await response.json()) as {
+      results?: { raw_content: string; url: string }[]
+    }
     if (!json.results || json.results.length === 0) {
       throw new Error('No results returned from content extraction service')
     }

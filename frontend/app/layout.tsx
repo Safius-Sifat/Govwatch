@@ -1,8 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import { Inter as FontSans } from 'next/font/google'
 
-import { Analytics } from '@vercel/analytics/next'
-
 import { getCurrentUserId } from '@/lib/auth/get-current-user'
 import { UserProvider } from '@/lib/contexts/user-context'
 import { hasSupabasePublicConfig } from '@/lib/supabase/keys'
@@ -102,7 +100,6 @@ export default async function RootLayout({
             </UserProvider>
           </PostHogProvider>
           <Toaster />
-          <Analytics />
         </ThemeProvider>
       </body>
     </html>

@@ -1,8 +1,4 @@
-import {
-  SearchImageItem,
-  SearchResults,
-  SerperSearchResultItem
-} from '@/lib/types'
+import { SearchResults, SerperSearchResultItem } from '@/lib/types'
 
 import { SearchProvider } from './base'
 
@@ -127,12 +123,15 @@ export class BraveSearchProvider implements SearchProvider {
         throw new Error('Search failed')
       }
 
-      const data = await response.json()
+      const data = (await response.json()) as {
+        web?: { results?: BraveWebResult[] }
+      }
       results.results = (data.web?.results || [])
         .slice(0, maxResults)
         .map((result: BraveWebResult) => ({
           title: result.title || 'No title',
           description: result.description || 'No description available',
+          content: result.description || 'No description available',
           url: result.url
         }))
     } catch (error) {
@@ -164,7 +163,9 @@ export class BraveSearchProvider implements SearchProvider {
         throw new Error('Search failed')
       }
 
-      const data = await response.json()
+      const data = (await response.json()) as {
+        results?: BraveVideoResult[]
+      }
 
       // Convert to SerperSearchResultItem format for compatibility
       results.videos = (data.results || []).slice(0, maxResults).map(
@@ -211,15 +212,19 @@ export class BraveSearchProvider implements SearchProvider {
         throw new Error('Search failed')
       }
 
-      const data = await response.json()
-      results.images = (data.results || []).slice(0, maxResults).map(
-        (result: BraveImageResult) =>
-          ({
-            title: result.title || 'No title',
-            link: result.url || result.source || '',
-            thumbnailUrl: this.getImageThumbnailUrl(result)
-          }) as SearchImageItem
-      )
+      const data = (await response.json()) as {
+        results?: BraveImageResult[]
+      }
+      results.images = (data.results || [])
+        .slice(0, maxResults)
+        .map(
+          (result: BraveImageResult) =>
+            this.getImageThumbnailUrl(result) ||
+            result.url ||
+            result.source ||
+            ''
+        )
+        .filter(Boolean) as string[]
     } catch (error) {
       console.error('Brave image search error:', error)
       results.images = []

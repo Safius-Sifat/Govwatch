@@ -26,6 +26,7 @@ import {
 import { toast } from 'sonner'
 
 import { captureClient } from '@/lib/analytics/posthog-client'
+import type { LibraryFileItem } from '@/lib/actions/files'
 import { SHORTCUT_EVENTS } from '@/lib/keyboard-shortcuts'
 import {
   isAdaptiveModeAuthBlocked,
@@ -314,7 +315,16 @@ export function ChatPanel({
               throw new Error('Upload failed')
             }
 
-            const { file: uploaded } = await res.json()
+            const { file: uploaded } = (await res.json()) as {
+              file: {
+                libraryFile?: LibraryFileItem
+                url?: string
+                filename?: string
+                key?: string
+                mediaType?: string
+                id?: string
+              }
+            }
             if (uploaded.libraryFile) {
               upsertCachedFile(uploaded.libraryFile)
             }

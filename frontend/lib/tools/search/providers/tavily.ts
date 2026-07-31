@@ -54,29 +54,27 @@ export class TavilySearchProvider extends BaseSearchProvider {
       throw new Error('Search failed')
     }
 
-    const data = await response.json()
+    const data = (await response.json()) as {
+      results?: Array<{ title?: string; url?: string }>
+      images?: Array<{
+        url: string
+        title?: string
+        description?: string
+      }>
+    }
 
     // Tavily returns top-level images with { url, title?, description? }. We try
     // to match each image to a result by title so the UI can link back to the
     // original article rather than just the image host.
     const resultTitleToUrl = new Map<string, string>()
-    for (const r of (data.results ?? []) as Array<{
-      title?: string
-      url?: string
-    }>) {
+    for (const r of data.results ?? []) {
       if (r.title && r.url) {
         resultTitleToUrl.set(r.title, r.url)
       }
     }
 
     const processedImages = includeImageDescriptions
-      ? (
-          data.images as Array<{
-            url: string
-            title?: string
-            description?: string
-          }>
-        )
+      ? (data.images ?? [])
           .map(image => {
             const sourceUrl = image.title
               ? resultTitleToUrl.get(image.title)
@@ -94,11 +92,13 @@ export class TavilySearchProvider extends BaseSearchProvider {
               image.description !== undefined &&
               image.description !== ''
           )
-      : data.images.map((url: string) => sanitizeUrl(url))
+      : ((data.images ?? []) as unknown as string[]).map(url =>
+          sanitizeUrl(url)
+        )
 
     return {
       ...data,
       images: processedImages
-    }
+    } as SearchResults
   }
 }

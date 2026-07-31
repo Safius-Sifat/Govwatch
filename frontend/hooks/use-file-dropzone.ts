@@ -76,7 +76,15 @@ export function useFileDropzone({
 
             if (!res.ok) throw new Error('Upload failed')
 
-            const { file: uploaded } = await res.json()
+            const { file: uploaded } = (await res.json()) as {
+              file: {
+                url?: string
+                filename?: string
+                key?: string
+                mediaType?: string
+                id?: string
+              }
+            }
 
             setUploadedFiles(prev =>
               prev.map(f =>
