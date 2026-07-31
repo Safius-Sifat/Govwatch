@@ -100,7 +100,7 @@ describe('Account Actions', () => {
     expect(dbActions.anonymizeUserFeedback).toHaveBeenCalledWith(user.id)
     expect(deleteUserObjects).toHaveBeenCalledWith(user.id)
     expect(deleteUser).toHaveBeenCalledWith(user.id)
-    expect(revalidateTag).toHaveBeenCalledWith('chat', 'max')
+    expect(revalidateTag).toHaveBeenCalledWith('chat')
     expect(trackAccountDeleted).toHaveBeenCalledTimes(1)
   })
 
