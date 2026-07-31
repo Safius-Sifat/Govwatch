@@ -1,8 +1,8 @@
 /**
- * Server-side helpers that call the GovWatch Worker. These run inside
- * Next.js route handlers and server components, so they can use
- * `process.env.WORKER_URL` directly without going through our own
- * proxy routes.
+ * Server-side helpers that call the GovWatch Worker backend. These
+ * run inside Next.js route handlers and server components, so they
+ * reach the backend via the same service-binding / dev-fallback path
+ * used by the API routes.
  *
  * Use these from server components in `app/` or `route.ts` handlers.
  * For client-side fetches, call `/api/worker/...` directly (which uses
@@ -17,13 +17,12 @@ import type {
   VendorGraph,
   VendorSummary,
 } from './types'
-import { getWorkerUrl } from './url'
+import { backendFetch } from './url'
 
 async function getJson<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${getWorkerUrl()}${path}`, {
+  const res = await backendFetch(path, {
     ...init,
     headers: { accept: 'application/json', ...(init?.headers ?? {}) },
-    cache: 'no-store',
   })
   if (!res.ok) {
     throw new Error(`Worker ${path} -> ${res.status}`)

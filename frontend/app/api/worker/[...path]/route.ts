@@ -6,11 +6,11 @@
  * /api/health. Anything else returns 404.
  *
  * We strip the /api/worker prefix and forward the remaining path to the
- * Worker, returning JSON. This proxy exists so the browser fetch is
- * same-origin (no CORS) and so we can centrally inject headers.
+ * Worker via a service binding, returning JSON. This proxy exists so
+ * the browser fetch is same-origin (no CORS) and so we can centrally
+ * inject headers.
  */
-// Workers runtime — same reason as /api/chat. Dropping nodejs compat.
-import { getWorkerUrl } from '@/lib/govwatch/url'
+import { backendFetch } from '@/lib/govwatch/url'
 
 const ALLOWED: Record<string, boolean> = {
   health: true,
@@ -39,10 +39,11 @@ export async function GET(
     return new Response('Not found', { status: 404 })
   }
 
-  const upstreamUrl = `${getWorkerUrl()}/api/${path.join('/')}${req.url.includes('?') ? '?' + new URL(req.url).searchParams.toString() : ''}`
+  const search = new URL(req.url).searchParams.toString()
+  const pathAndQuery = `/api/${path.join('/')}${search ? `?${search}` : ''}`
 
   try {
-    const upstream = await fetch(upstreamUrl, {
+    const upstream = await backendFetch(pathAndQuery, {
       method: 'GET',
       headers: { accept: 'application/json' },
     })
@@ -58,7 +59,10 @@ export async function GET(
     })
   } catch (err) {
     return new Response(
-      JSON.stringify({ error: 'worker_unreachable', detail: String(err) }),
+      JSON.stringify({
+        error: 'worker_unreachable',
+        detail: err instanceof Error ? err.message : String(err),
+      }),
       { status: 502, headers: { 'content-type': 'application/json' } },
     )
   }

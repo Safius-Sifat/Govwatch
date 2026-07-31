@@ -1,12 +1,12 @@
 /**
  * GovWatch chat API route.
  *
- * This route is a thin SSE proxy to the Cloudflare Worker backend. The
- * Worker exposes `POST /api/search` which emits SSE events:
- *   - `citations` -> data: { citations: [...] }
- *   - `anomaly`   -> data: { anomaly: {...} }
- *   - `text-delta`-> data: { delta: "..." }
- *   - `done`      -> data: { ... }
+ * Thin SSE proxy to the Cloudflare Worker backend. The Worker exposes
+ * `POST /api/search` which emits SSE events:
+ *   - `citations`  -> data: { citations: [...] }
+ *   - `anomaly`    -> data: { anomaly: {...} }
+ *   - `text-delta` -> data: { delta: "..." }
+ *   - `done`       -> data: { ... }
  *
  * We accept whatever JSON body the client sends, extract the user query
  * (or fall back to body.query), and forward it to the Worker. The
@@ -17,19 +17,16 @@
  * them. The reading state from Morphic's `useChat` is exercised by
  * the broader app, but GovWatch's own UI in `components/govwatch/chat`
  * consumes this stream directly via `fetch` + `ReadableStream`.
+ *
+ * Run on the Cloudflare Workers runtime. We forward via a service
+ * binding (see wrangler.toml `[[services]]` block and
+ * `lib/govwatch/url.ts`). Service bindings keep the subrequest at the
+ * edge, avoiding both `runtime: 'nodejs'`'s ReadableStream wrapping
+ * issue and the public-Workers-DNS `error code: 1042` we saw when
+ * calling the backend over its `*.workers.dev` URL.
  */
-// Run on the Cloudflare Workers runtime. Node.js compat (runtime =
-// 'nodejs') breaks fetch-streaming here: Workers streams the upstream
-// SSE body as a ReadableStream<Uint8Array> that the Workers runtime
-// knows how to forward, but Node.js compat wraps it as a Node
-// Readable which Response() can't consume cleanly. The result was a
-// 502 "Worker returned 404: error code 1042" on every /api/chat call.
-//
-// `WORKER_URL` is read via getCloudflareContext() in lib/govwatch/url.ts
-// because on the Workers runtime, vars declared in wrangler.toml are
-// NOT exposed through `process.env` — they live on the request context.
 
-import { getWorkerUrl } from '@/lib/govwatch/url'
+import { backendFetch } from '@/lib/govwatch/url'
 
 /**
  * Extract the user's text query from an AI SDK `message` payload, or
@@ -96,12 +93,9 @@ export async function POST(req: Request) {
   const langMatch = cookieHeader.match(/(?:^|;\s*)govwatch_lang=([^;]+)/)
   const language = langMatch?.[1] === 'en' ? 'en' : 'bn'
 
-  const targetUrl = `${getWorkerUrl()}/api/search`
-  console.log('[govwatch] /api/chat upstream:', targetUrl)
-
   let upstream: Response
   try {
-    upstream = await fetch(targetUrl, {
+    upstream = await backendFetch('/api/search', {
       method: 'POST',
       headers: {
         'content-type': 'application/json',
@@ -114,19 +108,11 @@ export async function POST(req: Request) {
       }),
     })
   } catch (err) {
-    console.error('[govwatch] /api/chat fetch threw:', String(err))
     return new Response(
-      `Upstream fetch threw: ${String(err)} (target=${targetUrl})`,
+      `Upstream fetch threw: ${err instanceof Error ? err.message : String(err)}`,
       { status: 502 },
     )
   }
-
-  console.log(
-    '[govwatch] /api/chat upstream status:',
-    upstream.status,
-    'hasBody:',
-    Boolean(upstream.body),
-  )
 
   if (!upstream.ok || !upstream.body) {
     return new Response(
@@ -143,7 +129,7 @@ export async function POST(req: Request) {
       'content-type': 'text/event-stream; charset=utf-8',
       'cache-control': 'no-cache, no-transform',
       'x-accel-buffering': 'no',
-      'connection': 'keep-alive',
+      connection: 'keep-alive',
     },
   })
 }

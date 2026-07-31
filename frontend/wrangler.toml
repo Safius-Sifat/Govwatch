@@ -17,14 +17,19 @@ binding = "ASSETS"
 # R2 incremental cache for Next.js — see open-next.config.ts
 # Commented out until the R2 bucket is provisioned. Uncomment and set
 # the bucket name once the cache bucket has been created in Cloudflare.
-# [[r2_buckets]]
-# binding = "NEXT_INC_CACHE_R2_BUCKET"
-# bucket_name = "govwatch-next-cache"
+[[r2_buckets]]
+binding = "NEXT_INC_CACHE_R2_BUCKET"
+bucket_name = "govwatch-next-cache"
+
+# Service binding to the GovWatch backend Worker. Calls go in-memory
+# at the edge — no public DNS, no Host-header routing, no 1042.
+[[services]]
+binding = "BACKEND"
+service = "shotto-gateway"
 
 # Non-secret env vars. Real secrets belong in `.dev.vars` (local) or
 # `wrangler secret put <NAME>` (deployed).
 [vars]
-WORKER_URL = "https://shotto-gateway.safiussifat.workers.dev"
 NEXTJS_ENV = "development"
 
 # Observability gives request logs in the Cloudflare dashboard.

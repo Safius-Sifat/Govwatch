@@ -2,11 +2,9 @@
  * Streams a PDF for a given tenderId from the Worker backend.
  *
  * Worker exposes GET /api/pdfs/:tenderId. We just forward that request
- * and return the binary stream.
+ * via a service binding and return the binary stream.
  */
-// Workers runtime — same reason as /api/chat. Dropping nodejs compat
-// so the upstream ReadableStream<Uint8Array> can be forwarded.
-import { getWorkerUrl } from '@/lib/govwatch/url'
+import { backendFetch } from '@/lib/govwatch/url'
 
 export async function GET(
   _req: Request,
@@ -17,7 +15,7 @@ export async function GET(
     return new Response('Invalid tenderId', { status: 400 })
   }
 
-  const upstream = await fetch(`${getWorkerUrl()}/api/pdfs/${tenderId}`)
+  const upstream = await backendFetch(`/api/pdfs/${tenderId}`)
 
   if (!upstream.ok || !upstream.body) {
     return new Response(`Worker returned ${upstream.status}`, {
