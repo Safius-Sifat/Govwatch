@@ -56,7 +56,7 @@ __pycache__/
 # ============================================================
 backend/scraper/data/*.ndjson
 !backend/scraper/data/.gitkeep
-backend/scraper/data/d1_load.sql
+backend/scraper/data/*_d1_load.sql
 backend/workers/.wrangler/
 
 # ============================================================
