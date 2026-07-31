@@ -7,6 +7,14 @@
  * Use these from server components in `app/` or `route.ts` handlers.
  * For client-side fetches, call `/api/worker/...` directly (which uses
  * this same code path internally).
+ *
+ * Backend route contract this layer talks to:
+ *   GET /api/stats
+ *   GET /api/anomalies?limit=N
+ *   GET /api/vendors/top?limit=N&sort=value|count
+ *   GET /api/vendors/:name/collusion
+ *   GET /api/ministries
+ *   GET /api/districts
  */
 
 import type {
@@ -42,14 +50,21 @@ export async function fetchAnomalies(limit = 20): Promise<Anomaly[]> {
   return getJson<Anomaly[]>(`/api/anomalies?limit=${limit}`).catch(() => [])
 }
 
-export async function fetchTopVendors(limit = 20): Promise<VendorSummary[]> {
-  return getJson<VendorSummary[]>(`/api/vendors?limit=${limit}`).catch(() => [])
+export async function fetchTopVendors(
+  limit = 20,
+  sort: 'value' | 'count' = 'value',
+): Promise<VendorSummary[]> {
+  const qs = new URLSearchParams({ limit: String(limit), sort })
+  const res = await getJson<{ vendors: VendorSummary[] }>(
+    `/api/vendors/top?${qs.toString()}`,
+  ).catch(() => ({ vendors: [] }))
+  return res.vendors ?? []
 }
 
 export async function fetchVendorGraph(id: string): Promise<VendorGraph | null> {
   try {
     return await getJson<VendorGraph>(
-      `/api/vendors/${encodeURIComponent(id)}`,
+      `/api/vendors/${encodeURIComponent(id)}/collusion`,
     )
   } catch {
     return null

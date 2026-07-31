@@ -37,31 +37,51 @@ export interface Anomaly {
   flagged_reason: string
 }
 
+/**
+ * Top-vendors row, returned by `GET /api/vendors/top`.
+ *
+ * Field names mirror what the Worker actually returns; do not rename
+ * without updating the SQL in `backend/workers/src/handlers/vendors.ts`.
+ */
 export interface VendorSummary {
-  vendor_name: string
-  total_contracts: number
+  vendor: string
+  display_name: string
+  tender_count: number
   total_value_bdt: number
-  first_seen?: string | null
-  last_seen?: string | null
+  district_count: number
 }
 
 export interface VendorGraphNode {
   id: string
   label: string
   type: 'vendor' | 'director'
+  /** Only set for the focal vendor node. */
+  tenders_won?: number
+  total_value_bdt?: number
 }
 
 export interface VendorGraphEdge {
   source: string
   target: string
-  /** How many contracts link this director to this vendor */
-  weight: number
+  relationship: 'owns' | 'shares_address'
+}
+
+/**
+ * Single tender contract attached to the focal vendor.
+ * Returned by `GET /api/vendors/:name/collusion`.
+ */
+export interface VendorContract {
+  tender_id: string
+  package_name: string
+  contract_price_bdt: number
+  contract_signing_date: string
 }
 
 export interface VendorGraph {
-  vendor: VendorSummary & { id: string }
-  nodes: VendorGraphNode[]
+  vendor: VendorGraphNode
+  directors: VendorGraphNode[]
   edges: VendorGraphEdge[]
+  contracts?: VendorContract[]
 }
 
 export interface Stats {

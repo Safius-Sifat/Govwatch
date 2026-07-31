@@ -1,7 +1,7 @@
 /**
  * Streams a PDF for a given tenderId from the Worker backend.
  *
- * Worker exposes GET /api/pdfs/:tenderId. We just forward that request
+ * Worker exposes GET /api/pdf/:key. We just forward that request
  * via a service binding and return the binary stream.
  */
 import { backendFetch } from '@/lib/govwatch/url'
@@ -15,7 +15,7 @@ export async function GET(
     return new Response('Invalid tenderId', { status: 400 })
   }
 
-  const upstream = await backendFetch(`/api/pdfs/${tenderId}`)
+  const upstream = await backendFetch(`/api/pdf/${tenderId}`)
 
   if (!upstream.ok || !upstream.body) {
     return new Response(`Worker returned ${upstream.status}`, {
