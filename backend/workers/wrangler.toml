@@ -11,7 +11,7 @@ compatibility_flags = ["nodejs_compat"]
 [[d1_databases]]
 binding = "DB"
 database_name = "shotto-db"
-database_id = "846b1292-08ce-474e-a403-d80496b959f7"  # wrangler d1 create shotto-db
+database_id =  # wrangler d1 create shotto-db
 
 # Vectorize (semantic embeddings)
 [[vectorize]]
