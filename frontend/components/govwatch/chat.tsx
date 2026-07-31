@@ -1,13 +1,13 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import TextareaAutosize from 'react-textarea-autosize'
 import { useRouter } from 'next/navigation'
 import { ArrowRight, Loader2, Square } from 'lucide-react'
 
 import { AnomalyAlertCard } from '@/components/search/anomaly-alert-card'
 import { CitationCard } from '@/components/search/citation-card'
 import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
 import { t } from '@/lib/govwatch/i18n'
 import type { Language } from '@/lib/govwatch/types'
 import {
@@ -99,12 +99,17 @@ export function GovWatchChat({
           className="relative w-full"
         >
           <div className="relative flex w-full flex-col gap-2 rounded-3xl border border-input bg-muted transition-shadow focus-within:ring-1 focus-within:ring-ring/30">
-            <Textarea
+            <TextareaAutosize
               value={draft}
               onChange={e => setDraft(e.target.value)}
               placeholder={t(language, 'search_placeholder')}
-              rows={1}
-              className="w-full resize-none border-0 bg-transparent px-4 py-3 text-sm placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-0"
+              minRows={1}
+              maxRows={8}
+              // Override the global textarea min-height (min-h-[80px] in
+              // globals.css / components/ui/textarea.tsx). Without this
+              // override the autosize library can't shrink the input back
+              // to a single line on first render.
+              className="min-h-0 w-full resize-none border-0 bg-transparent px-4 py-3 text-sm placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-0"
               onKeyDown={e => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                   e.preventDefault()
