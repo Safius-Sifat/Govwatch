@@ -63,7 +63,7 @@ export function GovWatchChat({
   }
 
   return (
-    <div className="mx-auto flex h-full max-w-4xl flex-col gap-4 px-4 py-6">
+    <div className="mx-auto flex h-full w-full max-w-3xl flex-col gap-4">
       {messages.length === 0 ? (
         <EmptyState
           language={language}
@@ -90,49 +90,54 @@ export function GovWatchChat({
         </div>
       )}
 
-      <div className="sticky bottom-0 -mx-4 border-t bg-background/80 px-4 py-3 backdrop-blur">
+      <div className="sticky bottom-0 bg-background pt-3">
         <form
           onSubmit={e => {
             e.preventDefault()
             void handleSubmit()
           }}
-          className="flex items-end gap-2"
+          className="relative w-full"
         >
-          <Textarea
-            value={draft}
-            onChange={e => setDraft(e.target.value)}
-            placeholder={t(language, 'search_placeholder')}
-            rows={1}
-            className="min-h-[44px] flex-1 resize-none rounded-xl border bg-muted/30 px-3 py-2.5 text-sm focus-visible:ring-1"
-            onKeyDown={e => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault()
-                void handleSubmit()
-              }
-            }}
-          />
-          {isStreaming ? (
-            <Button
-              type="button"
-              size="icon"
-              variant="outline"
-              onClick={handleStop}
-              className="h-11 w-11 shrink-0 rounded-xl"
-              aria-label="Stop"
-            >
-              <Square className="h-4 w-4" />
-            </Button>
-          ) : (
-            <Button
-              type="submit"
-              size="icon"
-              disabled={!draft.trim()}
-              className="h-11 w-11 shrink-0 rounded-xl"
-              aria-label={t(language, 'search_button')}
-            >
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-          )}
+          <div className="relative flex w-full flex-col gap-2 rounded-3xl border border-input bg-muted transition-shadow focus-within:ring-1 focus-within:ring-ring/30">
+            <Textarea
+              value={draft}
+              onChange={e => setDraft(e.target.value)}
+              placeholder={t(language, 'search_placeholder')}
+              rows={1}
+              className="w-full resize-none border-0 bg-transparent px-4 py-3 text-sm placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:ring-0"
+              onKeyDown={e => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault()
+                  void handleSubmit()
+                }
+              }}
+            />
+            <div className="flex items-center justify-between px-2 pb-2">
+              <div />
+              {isStreaming ? (
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="outline"
+                  onClick={handleStop}
+                  className="size-9 shrink-0 rounded-full"
+                  aria-label="Stop"
+                >
+                  <Square className="h-4 w-4" />
+                </Button>
+              ) : (
+                <Button
+                  type="submit"
+                  size="icon"
+                  disabled={!draft.trim()}
+                  className="size-9 shrink-0 rounded-full"
+                  aria-label={t(language, 'search_button')}
+                >
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+          </div>
         </form>
         {messages.length > 0 && !isStreaming && (
           <div className="mt-2 flex justify-end">
