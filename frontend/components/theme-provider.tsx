@@ -442,85 +442,14 @@ function getThemeScript({
     enableColorScheme
   ]).replace(/</g, '\\u003c')
 
-  return `(${themeScript.toString()}).apply(null, ${args})`
+  // Inline the script body as a string template to avoid `themeScript.toString()`
+  // round-tripping through Turbopack's post-transform code (which emits an
+  // `__name(fn, "fn")` helper that ships without the helper definition and
+  // crashes the browser with "Uncaught ReferenceError: __name is not defined").
+  return `(${themeScriptSource}).apply(null, ${args})`
 }
 
-function themeScript(
-  attribute: ThemeAttribute,
-  storageKey: string,
-  defaultTheme: string,
-  forcedTheme: string | undefined,
-  themes: string[],
-  value: ValueObject | undefined,
-  enableSystem: boolean,
-  enableColorScheme: boolean
-) {
-  const root = document.documentElement
-  const colorSchemeThemes = ['light', 'dark']
-
-  function getSystemTheme() {
-    return window.matchMedia('(prefers-color-scheme: dark)').matches
-      ? 'dark'
-      : 'light'
-  }
-
-  function getAttributes() {
-    return Array.isArray(attribute) ? attribute : [attribute]
-  }
-
-  function applyTheme(theme: string | undefined) {
-    if (!theme) {
-      return
-    }
-
-    const resolvedTheme =
-      theme === 'system' && enableSystem ? getSystemTheme() : theme
-    const themeValue = value?.[resolvedTheme] ?? resolvedTheme
-
-    for (const attr of getAttributes()) {
-      if (attr === 'class') {
-        const classesToRemove = themes
-          .map(themeName => value?.[themeName] ?? themeName)
-          .filter(Boolean)
-
-        if (classesToRemove.length > 0) {
-          root.classList.remove(...classesToRemove)
-        }
-
-        if (themeValue) {
-          root.classList.add(themeValue)
-        }
-      } else if (attr.startsWith('data-')) {
-        if (themeValue) {
-          root.setAttribute(attr, themeValue)
-        } else {
-          root.removeAttribute(attr)
-        }
-      }
-    }
-
-    if (enableColorScheme) {
-      const fallback = colorSchemeThemes.includes(defaultTheme)
-        ? defaultTheme
-        : undefined
-      const colorScheme = colorSchemeThemes.includes(resolvedTheme)
-        ? resolvedTheme
-        : fallback
-
-      if (colorScheme) {
-        root.style.colorScheme = colorScheme
-      }
-    }
-  }
-
-  if (forcedTheme) {
-    applyTheme(forcedTheme)
-    return
-  }
-
-  try {
-    applyTheme(localStorage.getItem(storageKey) ?? defaultTheme)
-  } catch {
-    applyTheme(defaultTheme)
-  }
-}
+// Source body of the inline theme bootstrap. Kept as a string (not a function)
+// so Turbopack can't transform it. The shape mirrors the original themeScript
+// function but uses minified-style parameter names to keep the payload small.
+const themeScriptSource = `function l(a2,b2,c2,d2,e2,f2,g2,h2){var i2=document.documentElement,j2=["light","dark"];function k2(b3){if(!b3)return;var d3=b3==="system"&&g2?window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light":b3,k3=f2?f2[d3]:d3;for(var b4=Array.isArray(a2)?a2:[a2])if(b4==="class"){var a3=e2.map(function(a4){return f2?f2[a4]:a4}).filter(Boolean);a3.length>0&&i2.classList.remove.apply(i2.classList,a3),k3&&i2.classList.add(k3)}else b4.indexOf("data-")===0&&(k3?i2.setAttribute(b4,k3):i2.removeAttribute(b4));if(h2){var a3=j2.includes(c2)?c2:void 0,b4=j2.includes(d3)?d3:a3;b4&&(i2.style.colorScheme=b4)}}if(d2)return void k2(d2);try{k2(localStorage.getItem(b2)||c2)}catch(a4){k2(c2)}}`
