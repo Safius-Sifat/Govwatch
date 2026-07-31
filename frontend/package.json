@@ -11,9 +11,10 @@
     "typecheck": "tsc --noEmit",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "build:pages": "next build && npx @cloudflare/next-on-pages",
-    "preview:pages": "wrangler pages dev .vercel/output/static",
-    "deploy": "wrangler pages deploy .vercel/output/static --project-name govwatch",
+    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+    "upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload",
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
     "migrate": "bun run lib/db/migrate.ts",
     "backfill:file-keys": "bun run scripts/backfill-file-object-keys.ts",
     "test": "NODE_ENV=test vitest run",
@@ -72,7 +73,7 @@
     "ai-sdk-ollama": "^3.8.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.0",
-    "cmdk": "1.0.0",
+    "cmdk": "1.0.4",
     "dotenv": "^17.2.1",
     "drizzle-kit": "^0.31.4",
     "drizzle-orm": "0.45.2",
@@ -99,7 +100,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@cloudflare/next-on-pages": "^1.13.16",
+    "@opennextjs/cloudflare": "^1.20.2",
     "@tailwindcss/postcss": "^4.1.11",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
@@ -115,7 +116,8 @@
     "prettier": "^3.6.2",
     "tailwindcss": "^4.1.11",
     "typescript": "^5",
-    "vitest": "^4.1.0"
+    "vitest": "^4.1.0",
+    "wrangler": "^4.116.0"
   },
   "engines": {
     "node": "22.x"

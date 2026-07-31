@@ -1,51 +1,18 @@
+import { initOpenNextCloudflareForDev } from '@opennextjs/cloudflare'
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Reverse proxy for PostHog to reduce tracking-blocker interception.
   skipTrailingSlashRedirect: true,
-  async rewrites() {
-    return [
-      {
-        source: '/relay/static/:path*',
-        destination: 'https://us-assets.i.posthog.com/static/:path*'
-      },
-      {
-        source: '/relay/array/:path*',
-        destination: 'https://us-assets.i.posthog.com/array/:path*'
-      },
-      {
-        source: '/relay/:path*',
-        destination: 'https://us.i.posthog.com/:path*'
-      }
-    ]
-  },
+  // The image optimizer is not supported on Cloudflare Workers, so we
+  // disable it and pass all images through to their source origin.
+  // PostHog /relay/* previously lived here as `rewrites()`; it's now a
+  // Route Handler at app/relay/[...path]/route.ts (external rewrites
+  // do not work for arbitrary hosts on Cloudflare Workers).
   images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'i.ytimg.com',
-        port: '',
-        pathname: '/vi/**'
-      },
-      {
-        protocol: 'https',
-        hostname: 'lh3.googleusercontent.com',
-        port: '',
-        pathname: '/a/**' // Google user content often follows this pattern
-      },
-      {
-        protocol: 'https',
-        hostname: 'imgs.search.brave.com',
-        port: '',
-        pathname: '/**' // Brave search cached images
-      },
-      {
-        protocol: 'https',
-        hostname: 'www.google.com',
-        port: '',
-        pathname: '/s2/favicons/**' // Google Favicon API
-      }
-    ]
+    unoptimized: true
   }
 }
 
 export default nextConfig
+
+initOpenNextCloudflareForDev()
