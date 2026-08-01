@@ -27,6 +27,8 @@ GovWatch turns a decade of Bangladesh government procurement records into a quer
 
 The whole stack runs on the edge — Cloudflare Workers, D1, Vectorize, and R2 — so responses stream in real time from a backend that lives close to users.
 
+Check our presentation - <a href="https://safius-sifat.github.io/Govwatch">Pitch Deck</a>
+
 ## Highlights
 
 - 🧠 **Bilingual RAG** — Bangla + English over real procurement data.
