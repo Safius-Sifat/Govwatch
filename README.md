@@ -29,6 +29,8 @@ The whole stack runs on the edge — Cloudflare Workers, D1, Vectorize, and R2 �
 
 Check our presentation - <a href="https://safius-sifat.github.io/Govwatch">Pitch Deck</a>
 
+Demo - <a href="https://www.facebook.com/share/v/1MXqcSUxoz/">See here</a> 
+
 ## Highlights
 
 - 🧠 **Bilingual RAG** — Bangla + English over real procurement data.
